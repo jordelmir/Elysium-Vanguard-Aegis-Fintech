@@ -113,90 +113,35 @@ class JavaFintechEngine {
       this.processStep();
       this.updateBackendTelemetry();
       this.updateCollectionsDynamics();
-      this.listeners.forEach(l => l({ ...this.state }));
+      this.broadcast();
     }, 2500);
   }
 
+  private broadcast() {
+    this.listeners.forEach(l => l({ ...this.state }));
+  }
+
+  public updateCase(loanId: string, updates: Partial<CollectionCase>) {
+    this.state.collections.cases = this.state.collections.cases.map(c => 
+      c.loanId === loanId ? { ...c, ...updates } : c
+    );
+    this.broadcast();
+  }
+
   private updateCollectionsDynamics() {
-    // Simular el motor NBA actualizando probabilidades
     this.state.collections.cases = this.state.collections.cases.map(c => ({
       ...c,
-      recoveryProbability: Math.min(1, Math.max(0, c.recoveryProbability + (Math.random() - 0.5) * 0.05)),
-      lastInteraction: Math.random() > 0.7 ? `AI_BOT: RE_NEGOTIATING_${Math.floor(Date.now()/100000)}` : c.lastInteraction
+      recoveryProbability: c.recoveryProbability > 0.99 ? 1 : Math.min(1, Math.max(0, c.recoveryProbability + (Math.random() - 0.5) * 0.02))
     }));
-
-    // Actualizar métricas globales de cobranza
-    this.state.collections.metrics = {
-      costToCollect: 0.01 + Math.random() * 0.005,
-      recoveryRate: 0.8 + Math.random() * 0.05,
-      cureRate: 0.6 + Math.random() * 0.1,
-      activeNegotiations: 40 + Math.floor(Math.random() * 10)
-    };
   }
 
   private updateBackendTelemetry() {
     this.kafkaCounter += Math.floor(Math.random() * 50);
-    this.state.backend = {
-      virtualThreads: 5000 + Math.floor(Math.random() * 15000),
-      heapUsage: 30 + Math.sin(Date.now() / 10000) * 10,
-      p99Latency: 0.8 + Math.random() * 0.4,
-      gcActivity: Math.random() > 0.9 ? 'ZGC_RUNNING' : 'IDLE',
-      kafkaOffset: this.kafkaCounter
-    };
+    this.state.backend.kafkaOffset = this.kafkaCounter;
   }
 
   private processStep() {
-    const steps = Object.values(ApplicationStep);
-    const nextIdx = (steps.indexOf(this.state.currentStep) + 1) % steps.length;
-    const nextStep = steps[nextIdx];
-
-    if (nextStep === ApplicationStep.KAFKA_INGEST) {
-      const sub = SUBJECTS[Math.floor(Math.random() * SUBJECTS.length)];
-      this.state.applicantName = sub.name;
-      this.state.applicantId = sub.id;
-      this.state.anomalies = [];
-    }
-
-    this.state.telemetry = {
-      keystrokeJitter: Math.random(),
-      scrollVelocity: Math.random() * 1000,
-      deviceStability: 0.5 + Math.random() * 0.5,
-      batteryStatus: Math.max(5, Math.floor(Math.random() * 100)),
-      isCharging: Math.random() > 0.5,
-      networkType: Math.random() > 0.9 ? 'VPN_DETECTED' : 'WIFI'
-    };
-
-    this.state.judges = {
-      tabularScore: Math.random(),
-      sequentialScore: Math.random(),
-      graphScore: this.state.telemetry.networkType === 'VPN_DETECTED' ? 0.98 : Math.random() * 0.2,
-      inferenceTimeMs: 4.2 + Math.random() * 8.5
-    };
-
-    this.state.siprScore = (this.state.judges.tabularScore * 0.45) + 
-                           (this.state.judges.sequentialScore * 0.35) + 
-                           (this.state.judges.graphScore * 0.2);
-
-    this.state.riskLevel = this.state.siprScore > 0.8 ? RiskLevel.CRITICAL : 
-                           this.state.siprScore > 0.5 ? RiskLevel.HIGH : 
-                           this.state.siprScore > 0.2 ? RiskLevel.MEDIUM : RiskLevel.LOW;
-
-    this.state.currentStep = nextStep;
-    this.state.lastAuditBlock = {
-      id: `BLK-${Math.floor(Math.random()*10000)}`,
-      hash: generateHash(),
-      timestamp: new Date().toISOString()
-    };
-
-    if (this.state.riskLevel === RiskLevel.CRITICAL && this.state.anomalies.length === 0) {
-      this.state.anomalies.push({
-        id: `ANM-${Math.floor(Math.random() * 9999)}`,
-        type: AnomalyType.METADATA,
-        description: "ONNX Confidence Mismatch: Device profile suggests bot farm emulation.",
-        severity: 0.95,
-        detectedAt: new Date().toISOString()
-      });
-    }
+    this.state.lastAuditBlock.hash = generateHash();
   }
 
   public subscribe(fn: (data: RiskProfile) => void) {

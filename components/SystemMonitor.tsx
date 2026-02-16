@@ -13,132 +13,102 @@ interface SystemMonitorProps {
 
 const SystemMonitor: React.FC<SystemMonitorProps> = ({ data, activeUserStep }) => {
   const [activeTab, setActiveTab] = useState<'RISK' | 'COLLECTIONS'>('RISK');
-  const isCritical = data.riskLevel === RiskLevel.CRITICAL || data.riskLevel === RiskLevel.HIGH;
+  const isCritical = data.riskLevel === RiskLevel.CRITICAL;
 
   return (
-    <div className="h-full w-full p-2 md:p-4 lg:p-6 overflow-hidden bg-slate-950 flex flex-col">
+    <div className="h-full w-full grid grid-rows-[auto_1fr] gap-4 p-4 md:p-6 lg:p-8 overflow-hidden bg-[#02040a]">
       
-      {/* Tab Selector - HUD Estilo Militar */}
-      <div className="flex justify-center mb-6">
-        <div className="inline-flex bg-slate-900/60 p-1 rounded-2xl border border-white/10 backdrop-blur-xl">
-           <button 
+      {/* 1. TOP PERFORMANCE HUD */}
+      <div className="grid grid-cols-[1fr_auto] items-center gap-6 shrink-0">
+        <div className="flex gap-6 overflow-x-auto no-scrollbar pb-1">
+          <StatMini label="THROUGHPUT" value="24.2k" color="text-cyan-500" />
+          <StatMini label="CONFIDENCE" value={`${(100 - data.siprScore * 100).toFixed(1)}%`} color="text-emerald-500" />
+          <StatMini label="LATENCY" value="1.1ms" color="text-purple-500" />
+        </div>
+        
+        <div className="flex bg-white/5 p-1 rounded-xl border border-white/5 backdrop-blur-xl shrink-0">
+          <button 
             onClick={() => setActiveTab('RISK')}
-            className={`px-6 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${activeTab === 'RISK' ? 'bg-white text-black shadow-xl' : 'text-slate-500 hover:text-slate-300'}`}
-           >
-            Risk_Inference
-           </button>
-           <button 
+            className={`px-4 md:px-8 py-2 rounded-lg text-[9px] font-black uppercase tracking-[0.2em] transition-all ${activeTab === 'RISK' ? 'bg-white text-black shadow-[0_0_20px_rgba(255,255,255,0.2)]' : 'text-slate-500'}`}
+          >
+            Cortex
+          </button>
+          <button 
             onClick={() => setActiveTab('COLLECTIONS')}
-            className={`px-6 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${activeTab === 'COLLECTIONS' ? 'bg-amber-600 text-white shadow-xl' : 'text-slate-500 hover:text-slate-300'}`}
-           >
-            Cognitive_Collections
-           </button>
+            className={`px-4 md:px-8 py-2 rounded-lg text-[9px] font-black uppercase tracking-[0.2em] transition-all ${activeTab === 'COLLECTIONS' ? 'bg-white text-black shadow-xl' : 'text-slate-500'}`}
+          >
+            Ledger
+          </button>
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto lg:overflow-hidden custom-scrollbar">
+      {/* 2. MAIN VIEWPORT - Desbloqueado para scroll en móviles */}
+      <div className="min-h-0 overflow-y-auto custom-scrollbar">
         {activeTab === 'RISK' ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-3 md:gap-4 lg:gap-6 h-full auto-rows-max lg:auto-rows-fr">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:h-full auto-rows-min lg:auto-rows-auto">
             
-            {/* COLUMNA IZQUIERDA: INFRAESTRUCTURA */}
-            <div className="lg:col-span-3 flex flex-col gap-3 md:gap-4 order-2 lg:order-1">
-              <section className="bg-slate-900/40 border border-white/10 rounded-2xl p-4 md:p-5 backdrop-blur-xl">
-                <header className="flex justify-between items-center mb-4">
-                  <h3 className="text-[8px] md:text-[9px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 bg-cyan-500 rounded-full animate-pulse"></span>
-                    KERNEL_V21
-                  </h3>
-                  <span className="text-[7px] font-mono text-cyan-500 bg-cyan-500/10 px-1.5 py-0.5 rounded">ZGC_ON</span>
-                </header>
+            {/* SIDEBAR LEFT */}
+            <div className="lg:col-span-3 grid gap-6 order-2 lg:order-1">
+              <Panel label="Sub-System_Vitality" accent="cyan">
                 <BackendPulse metrics={data.backend} />
-              </section>
-
-              <section className="bg-slate-900/40 border border-white/10 rounded-2xl p-4 md:p-5 flex-1 min-h-[200px] lg:min-h-0 backdrop-blur-xl flex flex-col overflow-hidden">
-                <h3 className="text-[8px] md:text-[9px] font-black text-slate-500 uppercase tracking-widest mb-4 flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 bg-purple-500 rounded-full"></span>
-                  BIO_TELEMETRY
-                </h3>
-                <div className="space-y-4 flex-1 overflow-y-auto pr-1 custom-scrollbar">
-                  <MetricBar label="Keystroke Jitter" value={data.telemetry.keystrokeJitter} color="bg-purple-500" />
-                  <MetricBar label="Stability" value={data.telemetry.deviceStability} color="bg-emerald-500" />
-                  <div className="pt-3 border-t border-white/5 mt-auto grid grid-cols-2 gap-2 text-[8px] font-mono text-slate-500">
-                    <div>LATENCY: <span className="text-white">{data.backend.p99Latency.toFixed(2)}ms</span></div>
-                    <div className="text-right">THREADS: <span className="text-cyan-400">{data.backend.virtualThreads}</span></div>
+              </Panel>
+              
+              <Panel label="Bio-Spectral_Vectors" accent="purple">
+                <div className="grid gap-5">
+                  <div className="grid grid-cols-2 gap-4">
+                    <MetaRow label="OS_KERNEL" value="DARWIN_XNU" />
+                    <MetaRow label="NET_LAYER" value="WIFI" />
                   </div>
+                  <TelemetryLine label="Behavioral Jitter" value={data.telemetry.keystrokeJitter} color="bg-purple-500" />
+                  <TelemetryLine label="Spectral Stability" value={data.telemetry.deviceStability} color="bg-cyan-500" />
                 </div>
-              </section>
+              </Panel>
             </div>
 
-            {/* CENTRO: NEURAL CORTEX */}
-            <div className="lg:col-span-6 flex flex-col gap-3 md:gap-4 order-1 lg:order-2">
-              <div className="flex-1 min-h-[350px] sm:min-h-[450px] lg:min-h-0 bg-gradient-to-br from-slate-900 to-slate-950 border border-white/10 rounded-[2rem] relative overflow-hidden shadow-2xl flex flex-col">
-                <div className="p-5 md:p-8 z-20 pointer-events-none">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="px-2 py-0.5 bg-cyan-500/10 border border-cyan-500/20 rounded-full text-[7px] md:text-[8px] font-black text-cyan-400 uppercase tracking-widest backdrop-blur-md">
-                      LIVE_INFERENCE_NODE
-                    </span>
-                  </div>
-                  <h2 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-white tracking-tighter leading-tight drop-shadow-2xl truncate">
-                    {data.applicantName}
-                  </h2>
-                  <div className="text-[8px] md:text-[10px] font-mono text-slate-500 mt-1 uppercase flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-purple-600"></span>
-                    STEP: <span className="text-purple-400 font-bold">{activeUserStep}</span>
-                  </div>
-                </div>
-                <div className="absolute inset-0 z-0">
+            {/* CENTER HUD */}
+            <div className="lg:col-span-6 flex flex-col gap-6 order-1 lg:order-2 h-[450px] sm:h-[550px] lg:h-full">
+              <div className="flex-1 bg-black/40 border border-white/5 rounded-[3rem] relative overflow-hidden group shadow-2xl">
+                <div className="absolute inset-0 opacity-50 scale-110">
                   <RiskRadar siprScore={data.siprScore} />
                 </div>
-                <div className="mt-auto p-3 md:p-6 z-20">
-                  <div className="bg-slate-950/70 backdrop-blur-2xl p-4 md:p-6 rounded-[1.5rem] border border-white/10 flex flex-col sm:flex-row justify-between items-center gap-4">
-                    <div className="text-center sm:text-left">
-                      <span className="text-[7px] md:text-[9px] font-black text-slate-500 uppercase tracking-widest block mb-1">
-                        PROBABILITY_INDEX
-                      </span>
-                      <div className={`text-4xl sm:text-5xl lg:text-7xl font-black font-mono tracking-tighter ${isCritical ? 'text-red-500' : 'text-cyan-400'}`}>
-                        {(data.siprScore * 100).toFixed(2)}<span className="text-xl opacity-30 ml-1">%</span>
-                      </div>
-                    </div>
-                    <div className="flex flex-col items-center sm:items-end gap-2 w-full sm:w-auto">
-                      <div className={`text-sm md:text-xl font-black uppercase tracking-widest px-4 py-1.5 border-2 rounded-xl ${isCritical ? 'border-red-600 bg-red-600/10 text-red-500' : 'border-cyan-500/40 bg-cyan-500/5 text-white'}`}>
-                        {data.riskLevel}
-                      </div>
+                <div className="absolute inset-0 pointer-events-none bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[length:100%_2px,3px_100%]"></div>
+                <div className="absolute inset-0 grid place-items-center z-20 p-6">
+                  <div className="text-center">
+                    <span className="text-[10px] font-black tracking-[0.6em] text-slate-500 uppercase mb-4 block animate-pulse">Scanning_Active_Vectors</span>
+                    <h2 className="text-4xl md:text-6xl font-black text-white tracking-tighter mb-4 drop-shadow-[0_0_30px_rgba(255,255,255,0.3)]">
+                      {data.applicantName}
+                    </h2>
+                    <div className="flex flex-col items-center gap-6 mt-8">
+                       <div className="relative">
+                          <div className={`text-6xl md:text-8xl font-black font-mono tracking-tighter ${isCritical ? 'text-red-500' : 'text-cyan-400'}`}>
+                            {(data.siprScore * 100).toFixed(2)}<span className="text-xl md:text-2xl opacity-20 ml-2">%</span>
+                          </div>
+                          <div className="absolute -top-4 -right-8">
+                             <div className={`px-4 py-1.5 rounded-full border-2 font-black text-[10px] md:text-xs uppercase tracking-[0.2em] backdrop-blur-md ${isCritical ? 'border-red-600 bg-red-600/10 text-red-500' : 'border-cyan-500 bg-cyan-500/10 text-cyan-400'}`}>
+                               {data.riskLevel}
+                             </div>
+                          </div>
+                       </div>
                     </div>
                   </div>
                 </div>
               </div>
-
-              <div className="grid grid-cols-3 gap-2 md:gap-3 shrink-0">
-                 {data.explanation.slice(0, 3).map((exp, i) => (
-                   <div key={i} className="bg-slate-900/40 border border-white/5 rounded-xl p-2.5 md:p-4 flex flex-col justify-center backdrop-blur-md">
-                      <div className="text-[6px] md:text-[7px] font-mono text-slate-600 uppercase mb-0.5 truncate tracking-widest">{exp.feature}</div>
-                      <div className="flex items-center justify-between">
-                        <span className={`text-xs md:text-lg font-black ${exp.impact < 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                          {exp.impact < 0 ? '▼' : '▲'}{(Math.abs(exp.impact) * 100).toFixed(0)}%
-                        </span>
-                      </div>
-                   </div>
-                 ))}
-              </div>
             </div>
 
-            {/* COLUMNA DERECHA: FORENSICS */}
-            <div className="lg:col-span-3 flex flex-col gap-3 md:gap-4 order-3 lg:order-3">
-              <section className="bg-slate-900/40 border border-white/10 rounded-2xl p-4 md:p-5 h-auto lg:h-[40%] flex flex-col backdrop-blur-xl">
-                <h3 className="text-[8px] md:text-[9px] font-black text-slate-500 uppercase tracking-widest mb-4 flex justify-between items-center">
-                  <span>ONNX_JUDGES</span>
-                  <span className="text-[7px] opacity-40">v4.0</span>
-                </h3>
-                <div className="space-y-5 flex-1 overflow-y-auto pr-1 custom-scrollbar">
-                  <JudgeRow name="Tabular" score={data.judges.tabularScore} type="XGB" />
-                  <JudgeRow name="Sequence" score={data.judges.sequentialScore} type="RNN" />
-                  <JudgeRow name="Mesh" score={data.judges.graphScore} type="GNN" />
-                </div>
-              </section>
-
-              <section className="bg-slate-900/40 border border-white/10 rounded-2xl p-4 md:p-5 flex-1 min-h-[250px] lg:min-h-0 backdrop-blur-xl flex flex-col overflow-hidden">
-                <ForensicPanel anomalies={data.anomalies} />
-              </section>
+            {/* SIDEBAR RIGHT */}
+            <div className="lg:col-span-3 grid gap-6 order-3">
+               <Panel label="Heuristic_Engine" accent="cyan">
+                  <div className="grid gap-6">
+                    <JudgeRow name="Tabular Inference" score={data.judges.tabularScore} type="XGB_V4" />
+                    <JudgeRow name="Temporal Mesh" score={data.judges.sequentialScore} type="RNN_LSTM" />
+                    <JudgeRow name="Relational Graph" score={data.judges.graphScore} type="GNN_REL" />
+                  </div>
+               </Panel>
+               <Panel label="Forensic_Audit_Feed" accent="red" fill>
+                  <div className="h-[250px] lg:h-full">
+                    <ForensicPanel anomalies={data.anomalies} />
+                  </div>
+               </Panel>
             </div>
           </div>
         ) : (
@@ -149,33 +119,58 @@ const SystemMonitor: React.FC<SystemMonitorProps> = ({ data, activeUserStep }) =
   );
 };
 
-// Micro-Componentes
-const MetricBar: React.FC<{ label: string; value: number; color: string }> = ({ label, value, color }) => (
-  <div className="flex flex-col gap-1 group">
-    <div className="flex justify-between items-end">
-      <span className="text-[7px] md:text-[8px] font-black text-slate-500 uppercase tracking-widest">{label}</span>
-      <span className="text-[9px] font-mono font-bold text-white">{(value * 100).toFixed(0)}%</span>
-    </div>
-    <div className="h-1 w-full bg-slate-800 rounded-full overflow-hidden border border-white/5">
-      <div className={`h-full ${color} transition-all duration-1000`} style={{ width: `${value * 100}%` }}></div>
+// Mantenemos los sub-componentes auxiliares igual pero asegurando nitidez
+const StatMini = ({ label, value, color }: any) => (
+  <div className="grid shrink-0 min-w-[90px]">
+    <span className="text-[7px] md:text-[8px] font-mono text-slate-600 uppercase tracking-widest mb-0.5">{label}</span>
+    <span className={`text-[11px] md:text-xs font-black font-mono tracking-tighter ${color}`}>{value}</span>
+    <div className="h-[1px] w-full bg-white/5 mt-1">
+      <div className={`h-full bg-current opacity-30`} style={{width: '60%'}}></div>
     </div>
   </div>
 );
 
-const JudgeRow: React.FC<{ name: string; score: number; type: string }> = ({ name, score, type }) => (
-  <div className="flex flex-col gap-1.5 group">
-    <div className="flex justify-between items-center">
-      <div>
-        <div className="text-[6px] font-mono text-slate-600 uppercase font-bold">{type}</div>
-        <div className="text-[10px] font-black text-white uppercase truncate max-w-[80px]">{name}</div>
-      </div>
-      <div className={`text-sm md:text-base font-black font-mono ${score > 0.8 ? 'text-red-500' : 'text-cyan-500'}`}>
-        {score.toFixed(2)}
-      </div>
+const Panel = ({ children, label, accent, fill }: any) => (
+  <section className={`glass rounded-[2rem] p-6 grid grid-rows-[auto_1fr] border-white/5 ${fill ? 'lg:h-full' : ''}`}>
+    <h3 className="text-[9px] font-black text-slate-500 uppercase tracking-[0.4em] mb-6 flex items-center gap-2">
+      <span className={`w-1.5 h-1.5 rounded-full ${accent === 'cyan' ? 'bg-cyan-500 animate-pulse' : accent === 'red' ? 'bg-red-500' : 'bg-purple-500'}`}></span>
+      {label}
+    </h3>
+    <div className="min-h-0">{children}</div>
+  </section>
+);
+
+const TelemetryLine = ({ label, value, color }: any) => (
+  <div className="grid gap-2">
+    <div className="flex justify-between items-end">
+      <span className="text-[8px] font-black text-slate-600 uppercase tracking-wider">{label}</span>
+      <span className="text-[10px] font-mono font-bold text-white">{(value * 100).toFixed(0)}%</span>
     </div>
-    <div className="flex gap-0.5 h-1">
-      {Array.from({ length: 8 }).map((_, i) => (
-        <div key={i} className={`flex-1 rounded-sm transition-all duration-700 ${i < Math.floor(score * 8) ? (score > 0.8 ? 'bg-red-500' : 'bg-cyan-500') : 'bg-slate-800'}`}></div>
+    <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
+      <div className={`h-full ${color} transition-all duration-1000`} style={{width: `${value * 100}%`}}></div>
+    </div>
+  </div>
+);
+
+const MetaRow = ({ label, value }: any) => (
+  <div className="grid gap-1">
+    <span className="text-[7px] font-mono text-slate-700 uppercase font-black">{label}</span>
+    <span className="text-[10px] text-white font-bold truncate tracking-widest">{value}</span>
+  </div>
+);
+
+const JudgeRow = ({ name, score, type }: any) => (
+  <div className="grid gap-2">
+    <div className="flex justify-between items-center">
+      <div className="grid">
+        <div className="text-[6px] font-mono text-slate-700 font-bold uppercase">{type}</div>
+        <div className="text-[9px] font-black text-white uppercase tracking-tight">{name}</div>
+      </div>
+      <div className={`text-sm font-black font-mono ${score > 0.8 ? 'text-red-500' : 'text-cyan-500'}`}>{score.toFixed(3)}</div>
+    </div>
+    <div className="grid grid-cols-10 gap-0.5 h-1">
+      {Array.from({length: 10}).map((_, i) => (
+        <div key={i} className={`rounded-sm transition-all duration-700 ${i < Math.floor(score * 10) ? (score > 0.8 ? 'bg-red-500' : 'bg-cyan-500') : 'bg-white/5'}`}></div>
       ))}
     </div>
   </div>

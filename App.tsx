@@ -1,127 +1,120 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { bioSocket } from './services/mockSocketService';
 import { RiskProfile, RiskLevel, UI_MODE, APPLICANT_FLOW_STEP } from './types';
 import SystemMonitor from './components/SystemMonitor';
 import ApplicantFlow from './components/ApplicantFlow';
-// Fix: Import BackendPulse component which is used in the applicant mode UI
-import BackendPulse from './components/BackendPulse';
+import { GoogleGenAI } from "@google/genai";
 
 const App: React.FC = () => {
   const [data, setData] = useState<RiskProfile | null>(null);
   const [uiMode, setUiMode] = useState<UI_MODE>(UI_MODE.SYSTEM_MONITOR);
   const [activeUserStep, setActiveUserStep] = useState<APPLICANT_FLOW_STEP>(APPLICANT_FLOW_STEP.IDENTITY_SCAN);
+  const [isAuditing, setIsAuditing] = useState(false);
 
   useEffect(() => {
     return bioSocket.subscribe(setData);
   }, []);
 
+  const runAiAudit = useCallback(async () => {
+    if (!data || isAuditing) return;
+    setIsAuditing(true);
+    try {
+      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+      const prompt = `Act as a senior risk auditor. Analyze this data packet: ${JSON.stringify(data)}. 
+      Return a JSON object with: verdict, reasoning (3 technical points), and confidence (0-1).`;
+      
+      const response = await ai.models.generateContent({
+        model: 'gemini-3-flash-preview',
+        contents: prompt,
+        config: { responseMimeType: "application/json" }
+      });
+      
+      const auditResult = JSON.parse(response.text || "{}");
+      setData(prev => prev ? { ...prev, aiAudit: auditResult } : null);
+    } catch (e) { console.error(e); } finally { setIsAuditing(false); }
+  }, [data, isAuditing]);
+
   if (!data) return (
-    <div className="h-screen w-screen bg-[#020617] flex flex-col items-center justify-center font-mono text-cyan-500">
-      <div className="w-12 h-12 border-4 border-cyan-500/20 border-t-cyan-500 rounded-full animate-spin mb-4"></div>
-      <div className="tracking-[0.5em] animate-pulse uppercase">Booting_Aegis_V3...</div>
-      <div className="text-[10px] mt-2 opacity-50 uppercase font-bold tracking-widest text-slate-500">Java 21 • Loom • ONNX Ingress</div>
+    <div className="h-screen w-screen bg-[#02040a] grid place-items-center font-mono">
+      <div className="flex flex-col items-center">
+        <div className="w-24 h-[1px] bg-cyan-500 animate-[width_2s_ease-in-out_infinite]"></div>
+        <div className="mt-6 text-[10px] tracking-[1.5em] text-cyan-500/50 uppercase ml-[1.5em]">Initializing_Aegis</div>
+      </div>
     </div>
   );
 
-  const isCritical = data.riskLevel === RiskLevel.CRITICAL || data.riskLevel === RiskLevel.HIGH;
+  const isCritical = data.riskLevel === RiskLevel.CRITICAL;
 
   return (
-    <div className={`h-screen w-screen flex flex-col bg-[#020617] overflow-hidden text-slate-300 font-sans transition-all duration-1000 ${isCritical ? 'shadow-[inset_0_0_150px_rgba(239,68,68,0.2)]' : ''}`}>
+    <div className={`h-screen w-screen grid grid-rows-[auto_1fr_auto] bg-[#02040a] overflow-hidden transition-all duration-1000 ${isCritical ? 'risk-critical' : ''}`}>
       
-      {/* 1. HEADER: Global Context & Mode Selector */}
-      <header className="h-20 flex-shrink-0 border-b border-white/5 bg-slate-950/80 backdrop-blur-3xl flex items-center justify-between px-6 lg:px-10 z-[60] relative overflow-hidden">
-        <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-cyan-500/50 to-transparent"></div>
-        
-        <div className="flex items-center gap-6 lg:gap-12">
-          <div className="flex items-center gap-4">
-            <div className={`w-12 h-12 rounded-2xl flex items-center justify-center font-black text-white text-xl transition-all duration-700 ${isCritical ? 'bg-red-600 shadow-[0_0_40px_rgba(239,68,68,0.5)]' : 'bg-cyan-600 shadow-[0_0_40px_rgba(8,145,178,0.5)]'}`}>A</div>
-            <div className="hidden sm:flex flex-col">
-                <span className="text-[14px] font-black tracking-[0.5em] uppercase text-white">Aegis <span className="text-cyan-500">Kernel</span></span>
-                <span className="text-[8px] font-mono text-slate-600 tracking-widest uppercase">Node_Region: GLOBAL-AMER-01</span>
-            </div>
-          </div>
-          
-          <div className="bg-slate-900/60 p-1 rounded-2xl border border-white/10 flex shadow-inner">
-            <button 
-              onClick={() => setUiMode(UI_MODE.SYSTEM_MONITOR)}
-              className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${uiMode === UI_MODE.SYSTEM_MONITOR ? 'bg-cyan-600 text-white shadow-2xl shadow-cyan-900/40 scale-105' : 'text-slate-500 hover:text-slate-300'}`}
-            >
-              Monitor
-            </button>
-            <button 
-              onClick={() => setUiMode(UI_MODE.APPLICANT)}
-              className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${uiMode === UI_MODE.APPLICANT ? 'bg-purple-600 text-white shadow-2xl shadow-purple-900/40 scale-105' : 'text-slate-500 hover:text-slate-300'}`}
-            >
-              Applicant
-            </button>
+      {/* HEADER: OPTIMIZADO PARA HUD */}
+      <header className="h-16 border-b border-white/5 glass grid grid-cols-[1fr_auto_1fr] items-center px-4 md:px-8 z-50">
+        <div className="flex items-center gap-4">
+          <div className={`w-8 h-8 rounded-lg grid place-items-center font-black text-xs ${isCritical ? 'bg-red-600' : 'bg-cyan-600'} shadow-[0_0_15px_rgba(0,242,255,0.4)]`}>Æ</div>
+          <div className="hidden sm:grid">
+            <span className="text-[10px] font-black tracking-[0.3em] uppercase text-white/90">Project_Aegis</span>
+            <span className="text-[7px] font-mono text-slate-500 uppercase">Sovereign_Cortex_V3.2</span>
           </div>
         </div>
 
-        <div className="flex items-center gap-10">
-           <div className="hidden xl:flex flex-col items-end">
-             <span className="text-[9px] font-mono text-slate-600 uppercase tracking-tighter">Backend Pipeline Latency</span>
-             <div className="text-[12px] font-black text-emerald-400 flex items-center gap-3">
-               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
-               {data.backend.p99Latency.toFixed(3)} ms P99
-             </div>
-          </div>
-          <div className="h-10 w-px bg-white/10 hidden lg:block"></div>
-          <div className="text-xs font-mono text-slate-400 bg-white/5 px-4 py-2 rounded-xl tracking-[0.2em] border border-white/5 font-bold">
-            {new Date().toLocaleTimeString('en-US', { hour12: false })}
+        <nav className="grid grid-cols-2 bg-black/60 p-1 rounded-xl border border-white/10 w-44 md:w-56">
+          <button
+            onClick={() => setUiMode(UI_MODE.SYSTEM_MONITOR)}
+            className={`py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${uiMode === UI_MODE.SYSTEM_MONITOR ? 'bg-white text-black shadow-lg' : 'text-slate-500'}`}
+          >
+            Monitor
+          </button>
+          <button
+            onClick={() => setUiMode(UI_MODE.APPLICANT)}
+            className={`py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${uiMode === UI_MODE.APPLICANT ? 'bg-white text-black shadow-lg' : 'text-slate-500'}`}
+          >
+            Applicant
+          </button>
+        </nav>
+
+        <div className="flex items-center justify-end gap-3 md:gap-6">
+          <button 
+            onClick={runAiAudit}
+            disabled={isAuditing}
+            className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-white/5 border border-white/10 rounded-lg hover:bg-white/10 transition-all text-white/60 hover:text-white"
+          >
+            {isAuditing ? <div className="w-2 h-2 border border-white border-t-transparent rounded-full animate-spin"></div> : <div className="w-1.5 h-1.5 bg-cyan-500 rounded-full shadow-[0_0_8px_cyan]"></div>}
+            <span className="text-[8px] font-black uppercase tracking-widest">Audit</span>
+          </button>
+          <div className="grid text-right">
+            <span className="text-[7px] font-mono text-slate-700 uppercase font-black">Cortex_Sync</span>
+            <span className="text-[9px] font-black text-white/80 font-mono">{new Date().toLocaleTimeString('en-GB', { hour12: false })}</span>
           </div>
         </div>
       </header>
 
-      {/* 2. MAIN WORKSPACE */}
-      <div className="flex-1 overflow-hidden relative">
+      {/* MAIN VIEWPORT */}
+      <main className="overflow-hidden relative bg-[#02040a]">
         {uiMode === UI_MODE.SYSTEM_MONITOR ? (
           <SystemMonitor data={data} activeUserStep={activeUserStep} />
         ) : (
-          <main className="h-full bg-slate-950 flex items-center justify-center p-0 md:p-8 lg:p-12 animate-in zoom-in-95 duration-1000 overflow-y-auto custom-scrollbar">
-             <ApplicantFlow 
-               onStepChange={setActiveUserStep} 
-               riskData={data} 
-             />
-             
-             {/* Dynamic Background Telemetry (Contextual) */}
-             <div className="hidden 3xl:flex absolute right-16 top-1/2 -translate-y-1/2 flex-col gap-8 w-[450px] opacity-20 hover:opacity-100 transition-all duration-1000 pointer-events-none hover:pointer-events-auto scale-90">
-                <div className="p-10 bg-slate-900/80 rounded-[48px] border border-white/10 backdrop-blur-3xl shadow-3xl">
-                  <h4 className="text-[12px] font-black text-cyan-500 uppercase mb-8 tracking-[0.4em]">Sub-System Vitality</h4>
-                  <div className="space-y-8">
-                     <BackendPulse metrics={data.backend} />
-                  </div>
-                </div>
-                <div className="p-10 bg-slate-900/80 rounded-[48px] border border-white/10 backdrop-blur-3xl shadow-3xl">
-                  <h4 className="text-[12px] font-black text-purple-500 uppercase mb-8 tracking-[0.4em]">Active Ingress Log</h4>
-                  <div className="font-mono text-[10px] text-slate-600 space-y-2 h-40 overflow-hidden">
-                    <p className="text-cyan-500/70">>> RECEIVE: KAFKA_STREAM_001</p>
-                    <p>>> PARSE: ONNX_BINARY_INPUT</p>
-                    <p>>> EXEC: LOOM_VIRTUAL_THREAD_41</p>
-                    <p className="text-emerald-500/50">>> VERDICT: PROCEED_TO_POLICY</p>
-                    <p className="animate-pulse">>> _</p>
-                  </div>
-                </div>
-             </div>
-          </main>
-        )}
-      </div>
-
-      {/* 3. FOOTER LEDGER */}
-      <footer className="h-12 flex-shrink-0 bg-black border-t border-white/5 flex items-center px-8 justify-between font-mono text-[10px] tracking-tight text-slate-600 z-50">
-        <div className="flex items-center gap-12">
-          <div className="flex items-center gap-3">
-            <span className="text-emerald-600 animate-pulse text-[14px]">●</span>
-            <span className="uppercase font-black tracking-widest text-slate-500">Kernel Security Status: SECURE</span>
+          <div className="h-full grid place-items-center p-4 md:p-8 bg-gradient-to-b from-[#02040a] to-[#050812] overflow-y-auto custom-scrollbar">
+            <ApplicantFlow onStepChange={setActiveUserStep} riskData={data} />
           </div>
-          <div className="hidden md:flex items-center gap-3">
-            <span className="uppercase font-black text-slate-700">Audit Ledger:</span>
-            <span className="text-slate-500 font-bold bg-white/5 px-2 py-0.5 rounded">{data.lastAuditBlock.id}</span>
+        )}
+      </main>
+
+      {/* FOOTER */}
+      <footer className="h-8 border-t border-white/5 bg-black/90 backdrop-blur-md grid grid-cols-[1fr_auto] items-center px-4 md:px-8 text-[7px] md:text-[9px] font-mono text-slate-700 z-50">
+        <div className="flex items-center gap-6 overflow-hidden">
+          <div className="flex items-center gap-1.5 shrink-0">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></span>
+            <span className="font-bold uppercase">Auth_Status: Nominal</span>
+          </div>
+          <div className="flex items-center gap-2 overflow-hidden truncate">
+            <span className="font-black shrink-0">PKI_HASH:</span>
+            <span className="text-cyan-900 truncate font-bold">{data.lastAuditBlock.hash}</span>
           </div>
         </div>
-        <div className="flex items-center gap-10">
-          <span className="hidden lg:inline text-slate-700 font-bold tracking-tighter truncate max-w-[400px]">BLOCK_HASH: {data.lastAuditBlock.hash}</span>
-          <span className="text-cyan-900 font-black tracking-[0.4em] uppercase italic opacity-40">Zero-Trust Protocol V3</span>
+        <div className="tracking-[0.4em] font-black uppercase italic ml-4">
+          ZERO_TRUST_ENCLAVE
         </div>
       </footer>
     </div>

@@ -1,37 +1,73 @@
+
 <!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>Project Aegis | Bio-Digital Cortex</title>
+    <title>Project Aegis | Sovereign Risk Cortex</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;700&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;500;800&family=Inter:wght@300;400;700;900&display=swap" rel="stylesheet">
     <style>
+      :root {
+        --color-bg: #02040a;
+        --color-accent: #00f2ff;
+        --color-danger: #ff0040;
+      }
       body {
-        background-color: #030712; /* Slate 950 */
-        color: #e2e8f0;
+        background-color: var(--color-bg);
+        color: #f8fafc;
         font-family: 'Inter', sans-serif;
-        overflow-x: hidden; /* Prevent horizontal scroll only */
-        /* overflow: hidden; REMOVED to allow app shell to handle scrolling */
+        overflow: hidden;
+        user-select: none;
       }
       .font-mono {
         font-family: 'JetBrains Mono', monospace;
       }
       
-      /* Polished scrollbar */
-      ::-webkit-scrollbar {
-        width: 4px;
-        height: 4px;
+      /* Film Grain Overlay */
+      .grain::after {
+        content: "";
+        position: fixed;
+        top: -150%; left: -150%; width: 300%; height: 300%;
+        background-image: url("https://grainy-gradients.vercel.app/noise.svg");
+        opacity: 0.04;
+        pointer-events: none;
+        animation: noise 8s steps(10) infinite;
+        z-index: 9999;
       }
-      ::-webkit-scrollbar-track {
-        background: rgba(15, 23, 42, 0.5);
+
+      @keyframes noise {
+        0%, 100% { transform:translate(0,0) }
+        10% { transform:translate(-5%,-10%) }
+        30% { transform:translate(3%,-15%) }
+        50% { transform:translate(12%,9%) }
+        70% { transform:translate(9%,4%) }
+        90% { transform:translate(-11%,3%) }
       }
-      ::-webkit-scrollbar-thumb {
-        background: #334155;
-        border-radius: 4px;
+
+      /* Custom Scrollbar */
+      ::-webkit-scrollbar { width: 2px; }
+      ::-webkit-scrollbar-track { background: transparent; }
+      ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+      
+      .glass {
+        background: rgba(15, 23, 42, 0.6);
+        backdrop-filter: blur(40px);
+        border: 1px solid rgba(255, 255, 255, 0.05);
       }
-      ::-webkit-scrollbar-thumb:hover {
-        background: #475569;
+
+      .glow-text {
+        text-shadow: 0 0 20px rgba(0, 242, 255, 0.3);
+      }
+
+      .risk-critical {
+        animation: critical-flash 2s infinite;
+      }
+
+      @keyframes critical-flash {
+        0% { box-shadow: inset 0 0 0px rgba(255,0,64,0); }
+        50% { box-shadow: inset 0 0 100px rgba(255,0,64,0.15); }
+        100% { box-shadow: inset 0 0 0px rgba(255,0,64,0); }
       }
     </style>
   <script type="importmap">
@@ -43,12 +79,13 @@
     "recharts": "https://esm.sh/recharts@^3.7.0",
     "three": "https://esm.sh/three@^0.182.0",
     "@react-three/drei": "https://esm.sh/@react-three/drei@^10.7.7",
-    "@react-three/fiber": "https://esm.sh/@react-three/fiber@^9.5.0"
+    "@react-three/fiber": "https://esm.sh/@react-three/fiber@^9.5.0",
+    "@google/genai": "https://esm.sh/@google/genai"
   }
 }
 </script>
 </head>
-  <body>
+  <body class="grain">
     <div id="root"></div>
   </body>
 </html>
