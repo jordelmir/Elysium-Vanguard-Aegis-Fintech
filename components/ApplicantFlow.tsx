@@ -17,12 +17,13 @@ const ApplicantFlow: React.FC<ApplicantFlowProps> = ({ onStepChange, riskData })
   const [auditEvidence, setAuditEvidence] = useState<any>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
 
-  const steps = Object.values(APPLICANT_FLOW_STEP);
+  // Added type assertion to ensure step in map is treated as string
+  const steps = Object.values(APPLICANT_FLOW_STEP) as string[];
   const currentStepIndex = steps.indexOf(currentStep);
   const progress = ((currentStepIndex + 1) / steps.length) * 100;
 
   useEffect(() => {
-    onStepChange(currentStep);
+    onStepChange(currentStep as APPLICANT_FLOW_STEP);
   }, [currentStep, onStepChange]);
 
   useEffect(() => {
@@ -52,7 +53,7 @@ const ApplicantFlow: React.FC<ApplicantFlowProps> = ({ onStepChange, riskData })
 
   const next = () => {
     const nextIdx = steps.indexOf(currentStep) + 1;
-    if (nextIdx < steps.length) setCurrentStep(steps[nextIdx]);
+    if (nextIdx < steps.length) setCurrentStep(steps[nextIdx] as APPLICANT_FLOW_STEP);
   };
 
   const handleSignatureComplete = (evidence: any) => {

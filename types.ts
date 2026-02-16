@@ -12,17 +12,20 @@ export enum USER_ROLE {
   CLIENT = 'CLIENT'
 }
 
+export enum UI_MODE {
+  DASHBOARD = 'DASHBOARD',
+  TERMINAL = 'TERMINAL',
+  FOCUS = 'FOCUS'
+}
+
 export enum ApplicationStep {
   KAFKA_INGEST = 'KAFKA_INGEST',
   WEBFLUX_ROUTING = 'WEBFLUX_ROUTING',
+  VIRTUAL_THREAD_EXEC = 'VIRTUAL_THREAD_EXEC',
   ONNX_INFERENCE = 'ONNX_INFERENCE',
   DROOLS_VALIDATION = 'DROOLS_VALIDATION',
+  LEDGER_COMMIT = 'LEDGER_COMMIT',
   DISBURSEMENT_EXEC = 'DISBURSEMENT_EXEC'
-}
-
-export enum UI_MODE {
-  APPLICANT = 'APPLICANT',
-  SYSTEM_MONITOR = 'SYSTEM_MONITOR'
 }
 
 export enum APPLICANT_FLOW_STEP {
@@ -35,11 +38,27 @@ export enum APPLICANT_FLOW_STEP {
   SUCCESS = 'SUCCESS'
 }
 
-export enum CollectionStrategy {
-  PREVENTIVE_PUSH = 'PREVENTIVE_PUSH',
-  SOFT_NEGOTIATION = 'SOFT_NEGOTIATION',
-  HARD_NEGOTIATION = 'HARD_NEGOTIATION',
-  LEGAL_NUCLEAR = 'LEGAL_NUCLEAR'
+export interface ClusterNode {
+  id: string;
+  type: 'CORE' | 'IA' | 'EDGE';
+  cpu: number;
+  memory: number;
+  pods: number;
+  status: 'HEALTHY' | 'PRESSURE' | 'SCALING';
+}
+
+export interface SecurityPerimeter {
+  wafBlockedToday: number;
+  activeDdosThreat: boolean;
+  mfaCompliance: number;
+  encryptionStandard: string;
+}
+
+export interface CICDPipeline {
+  currentBuild: string;
+  status: 'SUCCESS' | 'RUNNING' | 'ROLLING_BACK';
+  testCoverage: number;
+  securityGate: 'PASSED' | 'FAILED';
 }
 
 export enum DebtorCluster {
@@ -49,22 +68,11 @@ export enum DebtorCluster {
   FRAUDULENT = 'FRAUDULENT'
 }
 
-export interface CollectionCase {
-  loanId: string;
-  applicantName: string;
-  daysPastDue: number;
-  amountDue: number;
-  strategy: CollectionStrategy;
-  cluster: DebtorCluster;
-  recoveryProbability: number;
-  lastInteraction: string;
-}
-
-export interface CollectionMetrics {
-  costToCollect: number;
-  recoveryRate: number;
-  cureRate: number;
-  activeNegotiations: number;
+export enum CollectionStrategy {
+  PREVENTIVE_PUSH = 'PREVENTIVE_PUSH',
+  SOFT_NEGOTIATION = 'SOFT_NEGOTIATION',
+  HARD_NEGOTIATION = 'HARD_NEGOTIATION',
+  LEGAL_NUCLEAR = 'LEGAL_NUCLEAR'
 }
 
 export interface RiskProfile {
@@ -78,6 +86,10 @@ export interface RiskProfile {
   explanation: { feature: string; impact: number }[];
   riskLevel: RiskLevel;
   anomalies: Anomaly[];
+  services: ServiceStatus[];
+  cluster: ClusterNode[];
+  security: SecurityPerimeter;
+  pipeline: CICDPipeline;
   collections: {
     cases: CollectionCase[];
     metrics: CollectionMetrics;
@@ -103,6 +115,7 @@ export interface BackendMetrics {
   p99Latency: number;
   gcActivity: 'IDLE' | 'ZGC_RUNNING' | 'CLEANUP';
   kafkaOffset: number;
+  throughput: number;
 }
 
 export interface BehavioralTelemetry {
@@ -127,4 +140,29 @@ export interface Anomaly {
   description: string;
   severity: number;
   detectedAt: string;
+}
+
+export interface CollectionCase {
+  loanId: string;
+  applicantName: string;
+  daysPastDue: number;
+  amountDue: number;
+  strategy: CollectionStrategy; 
+  cluster: DebtorCluster;
+  recoveryProbability: number;
+  lastInteraction: string;
+}
+
+export interface CollectionMetrics {
+  costToCollect: number;
+  recoveryRate: number;
+  cureRate: number;
+  activeNegotiations: number;
+}
+
+export interface ServiceStatus {
+  name: string;
+  status: 'UP' | 'DOWN' | 'DEGRADED';
+  latency: number;
+  version: string;
 }

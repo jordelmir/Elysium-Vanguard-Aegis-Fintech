@@ -1,7 +1,7 @@
 
 import { 
   RiskProfile, RiskLevel, ApplicationStep, Anomaly, AnomalyType, 
-  CollectionStrategy, DebtorCluster, CollectionCase, CollectionMetrics 
+  ServiceStatus 
 } from '../types';
 
 const generateHash = () => Array.from({ length: 32 }, () => Math.floor(Math.random() * 16).toString(16)).join('');
@@ -46,8 +46,32 @@ class JavaFintechEngine {
         heapUsage: 22.5,
         p99Latency: 1.2,
         gcActivity: 'IDLE',
-        kafkaOffset: this.kafkaCounter
+        kafkaOffset: this.kafkaCounter,
+        throughput: 24200
       },
+      cluster: [
+        { id: 'EKS-NODE-01', type: 'CORE', cpu: 12, memory: 34, pods: 8, status: 'HEALTHY' },
+        { id: 'EKS-NODE-02', type: 'CORE', cpu: 18, memory: 41, pods: 12, status: 'HEALTHY' },
+        { id: 'IA-NODE-G5', type: 'IA', cpu: 78, memory: 88, pods: 4, status: 'PRESSURE' }
+      ],
+      security: {
+        wafBlockedToday: 12480,
+        activeDdosThreat: false,
+        mfaCompliance: 99.8,
+        encryptionStandard: 'AES-256-GCM'
+      },
+      pipeline: {
+        currentBuild: 'AEGIS-V6-6.0.4-REL',
+        status: 'SUCCESS',
+        testCoverage: 94.2,
+        securityGate: 'PASSED'
+      },
+      services: [
+        { name: 'IDENTITY-SVC', status: 'UP', latency: 45, version: 'v3.2.1' },
+        { name: 'RISK-ENGINE', status: 'UP', latency: 120, version: 'v6.0.4' },
+        { name: 'LEDGER-CORE', status: 'UP', latency: 12, version: 'v1.1.0' },
+        { name: 'KAFKA-CLUSTER', status: 'UP', latency: 2, version: 'v3.6.0' }
+      ],
       siprScore: 0.10,
       explanation: [
         { feature: "JVM_TRUST_SCORE", impact: -0.15 },
@@ -57,7 +81,7 @@ class JavaFintechEngine {
       riskLevel: RiskLevel.LOW,
       anomalies: [],
       collections: {
-        cases: this.generateInitialCollectionCases(),
+        cases: [],
         metrics: {
           costToCollect: 0.012,
           recoveryRate: 0.82,
@@ -73,46 +97,10 @@ class JavaFintechEngine {
     };
   }
 
-  private generateInitialCollectionCases(): CollectionCase[] {
-    return [
-      {
-        loanId: "LN-101",
-        applicantName: "ALEX MURPHY",
-        daysPastDue: 14,
-        amountDue: 450,
-        strategy: CollectionStrategy.SOFT_NEGOTIATION,
-        cluster: DebtorCluster.FORGETFUL,
-        recoveryProbability: 0.92,
-        lastInteraction: "AI_BOT: SMS_SENT"
-      },
-      {
-        loanId: "LN-202",
-        applicantName: "ELLEN RIPLEY",
-        daysPastDue: 45,
-        amountDue: 1200,
-        strategy: CollectionStrategy.HARD_NEGOTIATION,
-        cluster: DebtorCluster.NEGLIGENT,
-        recoveryProbability: 0.45,
-        lastInteraction: "AI_BOT: WHATSAPP_REPLY_PENDING"
-      },
-      {
-        loanId: "LN-303",
-        applicantName: "HANS GRUBER",
-        daysPastDue: 92,
-        amountDue: 5000,
-        strategy: CollectionStrategy.LEGAL_NUCLEAR,
-        cluster: DebtorCluster.FRAUDULENT,
-        recoveryProbability: 0.05,
-        lastInteraction: "SYSTEM: BUREAU_REPORTED"
-      }
-    ];
-  }
-
   private init() {
     setInterval(() => {
-      this.processStep();
       this.updateBackendTelemetry();
-      this.updateCollectionsDynamics();
+      this.updateClusterDynamics();
       this.broadcast();
     }, 2500);
   }
@@ -121,27 +109,20 @@ class JavaFintechEngine {
     this.listeners.forEach(l => l({ ...this.state }));
   }
 
-  public updateCase(loanId: string, updates: Partial<CollectionCase>) {
-    this.state.collections.cases = this.state.collections.cases.map(c => 
-      c.loanId === loanId ? { ...c, ...updates } : c
-    );
-    this.broadcast();
-  }
-
-  private updateCollectionsDynamics() {
-    this.state.collections.cases = this.state.collections.cases.map(c => ({
-      ...c,
-      recoveryProbability: c.recoveryProbability > 0.99 ? 1 : Math.min(1, Math.max(0, c.recoveryProbability + (Math.random() - 0.5) * 0.02))
+  private updateClusterDynamics() {
+    this.state.cluster = this.state.cluster.map(node => ({
+      ...node,
+      cpu: Math.min(100, Math.max(5, node.cpu + (Math.random() - 0.5) * 10)),
+      memory: Math.min(100, Math.max(5, node.memory + (Math.random() - 0.5) * 5))
     }));
+    this.state.security.wafBlockedToday += Math.floor(Math.random() * 5);
   }
 
   private updateBackendTelemetry() {
     this.kafkaCounter += Math.floor(Math.random() * 50);
     this.state.backend.kafkaOffset = this.kafkaCounter;
-  }
-
-  private processStep() {
-    this.state.lastAuditBlock.hash = generateHash();
+    this.state.backend.heapUsage = Math.min(95, Math.max(10, this.state.backend.heapUsage + (Math.random() - 0.5) * 2));
+    this.state.backend.p99Latency = Math.max(0.8, this.state.backend.p99Latency + (Math.random() - 0.5) * 0.1);
   }
 
   public subscribe(fn: (data: RiskProfile) => void) {
