@@ -111,7 +111,7 @@ const ApplicantFlow: React.FC<ApplicantFlowProps> = ({ onStepChange, riskData })
           {currentStep === APPLICANT_FLOW_STEP.IDENTITY_SCAN && (
             <div className="animate-in slide-in-from-bottom-8 duration-500 max-w-2xl mx-auto w-full text-center md:text-left">
               <h1 className="text-3xl md:text-6xl font-black text-white tracking-tighter mb-4 uppercase italic leading-none">ID_Core_Extract</h1>
-              <p className="text-slate-400 mb-8 md:mb-12 text-base md:text-xl">Escaneo de documentos soberanos mediante visión artificial.</p>
+              <p className="text-slate-400 mb-8 md:mb-12 text-base md:text-xl">Sovereign document scanning via computer vision.</p>
               
               <div className={`relative aspect-[1.6/1] w-full bg-slate-900 rounded-[1.5rem] md:rounded-[3rem] border-2 border-dashed transition-all duration-700 flex flex-col items-center justify-center overflow-hidden group ${isScanning ? 'border-cyan-500 shadow-2xl' : isVerified ? 'border-emerald-500' : 'border-slate-800 hover:border-slate-600'}`}>
                 {isScanning && <div className="absolute inset-x-0 h-1 bg-cyan-500/80 shadow-[0_0_20px_rgba(34,211,238,0.8)] animate-[scan_2s_infinite] z-20"></div>}
@@ -146,7 +146,7 @@ const ApplicantFlow: React.FC<ApplicantFlowProps> = ({ onStepChange, riskData })
           {currentStep === APPLICANT_FLOW_STEP.LIVENESS_CHECK && (
             <div className="animate-in fade-in slide-in-from-right-12 duration-500 text-center max-w-lg mx-auto w-full">
                <h1 className="text-3xl md:text-5xl font-black text-white tracking-tighter mb-4 uppercase italic leading-none">Neural_Proof</h1>
-               <p className="text-slate-400 mb-8 md:mb-12 text-base">Prueba de vida mediante análisis espectral de retina.</p>
+               <p className="text-slate-400 mb-8 md:mb-12 text-base">Liveness proof via spectral retinal analysis.</p>
                
                <div className="relative mx-auto w-48 sm:w-64 md:w-80 aspect-square">
                  <div className="absolute inset-0 rounded-full border-2 md:border-4 border-slate-900 overflow-hidden bg-slate-950 shadow-2xl">
@@ -166,7 +166,7 @@ const ApplicantFlow: React.FC<ApplicantFlowProps> = ({ onStepChange, riskData })
           {currentStep === APPLICANT_FLOW_STEP.BANK_CONNECT && (
             <div className="animate-in fade-in slide-in-from-right-12 duration-500 max-w-2xl mx-auto w-full">
                <h1 className="text-3xl md:text-5xl font-black text-white tracking-tighter mb-4 uppercase italic leading-none">Financial_Nexus</h1>
-               <p className="text-slate-400 mb-8 md:mb-12 text-base">Protocolo Open Banking de baja latencia.</p>
+               <p className="text-slate-400 mb-8 md:mb-12 text-base">Low-latency Open Banking protocol connection.</p>
                
                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
                  {[
@@ -259,7 +259,7 @@ const ApplicantFlow: React.FC<ApplicantFlowProps> = ({ onStepChange, riskData })
                   <div className="absolute inset-0 flex items-center justify-center font-black text-white text-xl md:text-3xl uppercase tracking-widest italic drop-shadow-2xl">AEGIS</div>
                </div>
                <h1 className="text-2xl md:text-4xl font-black text-white uppercase tracking-widest mb-4">Securing_Vault</h1>
-               <p className="text-slate-600 font-mono text-[9px] md:text-xs uppercase">Commiting evidence to digital ledger...</p>
+               <p className="text-slate-600 font-mono text-[9px] md:text-xs uppercase">Committing evidence to digital ledger...</p>
             </div>
           )}
 
@@ -269,7 +269,7 @@ const ApplicantFlow: React.FC<ApplicantFlowProps> = ({ onStepChange, riskData })
                   <svg className="w-12 h-12 md:w-20 md:h-20 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={4} d="M5 13l4 4L19 7" /></svg>
                </div>
                <h1 className="text-3xl md:text-6xl font-black text-white tracking-tighter mb-4 leading-none uppercase italic">Settled</h1>
-               <p className="text-slate-500 text-sm md:text-xl mb-8 md:mb-12 leading-relaxed">Transacción certificada por el Núcleo Aegis.</p>
+               <p className="text-slate-500 text-sm md:text-xl mb-8 md:mb-12 leading-relaxed">Transaction certified by the Aegis Nucleus.</p>
                
                <div className="bg-slate-900/60 p-6 md:p-10 rounded-2xl md:rounded-[3rem] border border-white/10 text-left mb-8 md:mb-12">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-8">

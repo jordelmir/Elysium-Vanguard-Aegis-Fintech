@@ -6,10 +6,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>Project Aegis | Sovereign Risk Cortex</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;500;800&family=Inter:wght@300;400;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;500;800&family=Inter:wght@300;400;600;700;900&display=swap" rel="stylesheet">
     <style>
       :root {
-        --color-bg: #02040a;
+        --color-bg: #000000;
         --color-accent: #00f2ff;
         --color-danger: #ff0040;
       }
@@ -17,47 +17,54 @@
         background-color: var(--color-bg);
         color: #f8fafc;
         font-family: 'Inter', sans-serif;
-        overflow: hidden;
+        overflow-x: hidden;
         user-select: none;
       }
       .font-mono {
         font-family: 'JetBrains Mono', monospace;
       }
       
-      /* Film Grain Overlay */
-      .grain::after {
-        content: "";
-        position: fixed;
-        top: -150%; left: -150%; width: 300%; height: 300%;
-        background-image: url("https://grainy-gradients.vercel.app/noise.svg");
-        opacity: 0.04;
-        pointer-events: none;
-        animation: noise 8s steps(10) infinite;
-        z-index: 9999;
+      /* Mesh Gradient Animation */
+      .bg-mesh {
+        background-color: #000;
+        background-image: 
+          radial-gradient(at 0% 0%, hsla(180,100%,50%,0.1) 0, transparent 50%), 
+          radial-gradient(at 50% 0%, hsla(280,100%,50%,0.05) 0, transparent 50%),
+          radial-gradient(at 100% 0%, hsla(150,100%,50%,0.1) 0, transparent 50%);
+        animation: mesh-flow 15s ease infinite alternate;
       }
 
-      @keyframes noise {
-        0%, 100% { transform:translate(0,0) }
-        10% { transform:translate(-5%,-10%) }
-        30% { transform:translate(3%,-15%) }
-        50% { transform:translate(12%,9%) }
-        70% { transform:translate(9%,4%) }
-        90% { transform:translate(-11%,3%) }
+      @keyframes mesh-flow {
+        0% { background-position: 0% 0%; }
+        100% { background-position: 100% 100%; }
       }
 
       /* Custom Scrollbar */
-      ::-webkit-scrollbar { width: 2px; }
+      ::-webkit-scrollbar { width: 4px; }
       ::-webkit-scrollbar-track { background: transparent; }
-      ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+      ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.05); border-radius: 10px; }
       
       .glass {
-        background: rgba(15, 23, 42, 0.6);
-        backdrop-filter: blur(40px);
-        border: 1px solid rgba(255, 255, 255, 0.05);
+        background: rgba(10, 10, 10, 0.4);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
       }
 
-      .glow-text {
-        text-shadow: 0 0 20px rgba(0, 242, 255, 0.3);
+      .glow-border {
+        position: relative;
+      }
+      .glow-border::after {
+        content: "";
+        position: absolute;
+        inset: -1px;
+        background: linear-gradient(90deg, transparent, rgba(0, 242, 255, 0.3), transparent);
+        z-index: -1;
+        border-radius: inherit;
+        opacity: 0;
+        transition: opacity 0.3s;
+      }
+      .glow-border:hover::after {
+        opacity: 1;
       }
 
       .risk-critical {
@@ -66,8 +73,16 @@
 
       @keyframes critical-flash {
         0% { box-shadow: inset 0 0 0px rgba(255,0,64,0); }
-        50% { box-shadow: inset 0 0 100px rgba(255,0,64,0.15); }
+        50% { box-shadow: inset 0 0 100px rgba(255,0,64,0.1); }
         100% { box-shadow: inset 0 0 0px rgba(255,0,64,0); }
+      }
+
+      .animate-float {
+        animation: float 6s ease-in-out infinite;
+      }
+      @keyframes float {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-10px); }
       }
     </style>
   <script type="importmap">
@@ -85,7 +100,7 @@
 }
 </script>
 </head>
-  <body class="grain">
+  <body class="bg-mesh">
     <div id="root"></div>
   </body>
 </html>

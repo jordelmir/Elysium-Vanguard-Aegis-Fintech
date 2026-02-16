@@ -35,8 +35,8 @@ const LegalVault: React.FC<LegalVaultProps> = ({ loanAmount, applicantName, onSi
           
           <div className="glass rounded-[3rem] p-8 md:p-12 shadow-3xl grid items-center">
             <div className="grid gap-6 md:gap-8">
-              <Row label="Capital_Principal" value={`$${loanAmount.toLocaleString()}`} />
-              <Row label="Yield_Cost (CAT)" value="14.85%" accent="text-emerald-500" />
+              <Row label="Principal_Capital" value={`$${loanAmount.toLocaleString()}`} />
+              <Row label="Yield_Cost (APR)" value="14.85%" accent="text-emerald-500" />
               <Row label="Settlement_Total" value={`$${total.toFixed(2)}`} accent="text-cyan-500" />
               <div className="h-[1px] bg-white/5 w-full"></div>
               <Row label="Contract_Maturity" value="Oct 15, 2025" />
@@ -71,9 +71,9 @@ const LegalVault: React.FC<LegalVaultProps> = ({ loanAmount, applicantName, onSi
             className="bg-white text-slate-950 p-8 md:p-20 overflow-y-auto rounded-[3rem] font-serif leading-relaxed shadow-inner border-[12px] md:border-[24px] border-[#02040a] custom-scrollbar-light"
           >
             <div className="max-w-md mx-auto">
-              <h3 className="text-center font-black text-2xl mb-12 uppercase border-b-4 border-slate-200 pb-10 tracking-tight italic">Pagaré Digital Inmutable</h3>
-              <p className="mb-8 text-lg">Yo, <strong>{applicantName}</strong>, por mi propio derecho, reconozco y acepto adeudar la cantidad de <strong>${loanAmount} USD</strong> a Project Aegis.</p>
-              <p className="mb-8"><strong>NO-REPUDIO:</strong> La interacción biométrica y el scroll completo de este ledger constituye prueba plena de voluntad y firma electrónica avanzada.</p>
+              <h3 className="text-center font-black text-2xl mb-12 uppercase border-b-4 border-slate-200 pb-10 tracking-tight italic">Immutable Digital Promissory Note</h3>
+              <p className="mb-8 text-lg">I, <strong>{applicantName}</strong>, acting in my own right, hereby acknowledge and agree to owe the amount of <strong>${loanAmount} USD</strong> to Project Aegis.</p>
+              <p className="mb-8"><strong>NON-REPUDIATION:</strong> Biometric interaction and full scrolling of this digital ledger constitutes full proof of intent and advanced electronic signature under existing institutional frameworks.</p>
               <p className="mb-12 italic opacity-60">ID_ORIGIN: 0x{Math.random().toString(16).substr(2, 8).toUpperCase()} | UTC_TIMESTAMP: {new Date().toISOString()}</p>
             </div>
           </div>
@@ -123,7 +123,7 @@ const LegalVault: React.FC<LegalVaultProps> = ({ loanAmount, applicantName, onSi
                    {verifying ? (
                      <div className="flex items-center justify-center gap-3">
                         <div className="w-5 h-5 border-3 border-white/20 border-t-white rounded-full animate-spin"></div>
-                        <span className="animate-pulse">Commiting_Block...</span>
+                        <span className="animate-pulse">Committing_Block...</span>
                      </div>
                    ) : 'Execute Digital Seal'}
                  </button>

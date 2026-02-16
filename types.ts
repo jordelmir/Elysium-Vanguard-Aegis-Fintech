@@ -6,6 +6,12 @@ export enum RiskLevel {
   CRITICAL = 'CRITICAL'
 }
 
+export enum USER_ROLE {
+  ADMIN = 'ADMIN',
+  OFFICER = 'OFFICER',
+  CLIENT = 'CLIENT'
+}
+
 export enum ApplicationStep {
   KAFKA_INGEST = 'KAFKA_INGEST',
   WEBFLUX_ROUTING = 'WEBFLUX_ROUTING',
@@ -81,6 +87,7 @@ export interface RiskProfile {
     hash: string;
     timestamp: string;
   };
+  aiAudit?: any;
 }
 
 export enum AnomalyType {
