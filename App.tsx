@@ -50,12 +50,42 @@ const App: React.FC = () => {
   };
 
   if (!data) return (
-    <div className="min-h-screen w-full bg-[#02040a] grid place-items-center font-mono">
-      <div className="flex flex-col items-center p-6 text-center">
-        <div className="w-32 h-[1px] bg-cyan-500 animate-[pulse_2s_infinite]"></div>
-        <div className="mt-8 text-[11px] tracking-[1.5em] text-cyan-500/50 uppercase ml-[1.5em] font-black">AEGIS_COGNITIVE_BOOT</div>
-        <div className="mt-4 text-[9px] text-slate-800 uppercase tracking-widest">Awaiting Uplink Synchronization...</div>
+    <div className="min-h-screen w-full bg-[#02040a] grid place-items-center font-mono overflow-hidden">
+      <div className="flex flex-col items-center p-8 text-center max-w-full">
+        {/* Animated Scanning Line */}
+        <div className="relative w-48 h-[2px] bg-slate-900 overflow-hidden rounded-full mb-10">
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-cyan-500 to-transparent animate-[scan_2s_infinite]"></div>
+        </div>
+
+        <div className="space-y-6">
+          <h2 className="text-[10px] md:text-[12px] tracking-[0.5em] md:tracking-[0.8em] text-cyan-500 font-black uppercase leading-none break-all sm:break-normal">
+            AEGIS_COGNITIVE_BOOT
+          </h2>
+          <div className="flex flex-col items-center gap-3">
+            <p className="text-[9px] text-slate-700 uppercase tracking-widest font-bold">
+              Awaiting Uplink Synchronization...
+            </p>
+            <div className="flex gap-1.5">
+              <div className="w-1 h-1 bg-cyan-500/40 rounded-full animate-bounce"></div>
+              <div className="w-1 h-1 bg-cyan-500/40 rounded-full animate-bounce [animation-delay:0.2s]"></div>
+              <div className="w-1 h-1 bg-cyan-500/40 rounded-full animate-bounce [animation-delay:0.4s]"></div>
+            </div>
+          </div>
+        </div>
+
+        {/* Technical Metadata Footer */}
+        <div className="mt-20 opacity-20 text-[7px] text-slate-500 font-mono space-y-1">
+          <p>KERNEL_REVISION: 6.4.2-GOLD</p>
+          <p>BIO_METRIC_BUFFER: 0x82A10F</p>
+        </div>
       </div>
+      
+      <style>{`
+        @keyframes scan {
+          0% { transform: translateX(-100%); }
+          100% { transform: translateX(100%); }
+        }
+      `}</style>
     </div>
   );
 
