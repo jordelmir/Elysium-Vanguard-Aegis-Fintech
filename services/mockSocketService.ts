@@ -1,15 +1,17 @@
 
 import { 
   RiskProfile, RiskLevel, ApplicationStep, Anomaly, AnomalyType, 
-  ServiceStatus 
+  ServiceStatus, DebtorCluster, CollectionStrategy
 } from '../types';
 
 const generateHash = () => Array.from({ length: 32 }, () => Math.floor(Math.random() * 16).toString(16)).join('');
 
-const SUBJECTS = [
+export const SUBJECTS = [
   { name: "ELON V. MASK", id: "NODE-772-X" },
   { name: "SARAH CONNOR", id: "NODE-101-T" },
-  { name: "NEO ANDERSON", id: "NODE-001-Z" }
+  { name: "NEO ANDERSON", id: "NODE-001-Z" },
+  { name: "TRINITY PRIME", id: "NODE-002-Z" },
+  { name: "MORPHEUS N.", id: "NODE-003-Z" }
 ];
 
 class JavaFintechEngine {
@@ -18,14 +20,15 @@ class JavaFintechEngine {
   private kafkaCounter = 442190;
 
   constructor() {
-    this.state = this.createInitialState();
+    this.state = this.createInitialState(SUBJECTS[0].id, SUBJECTS[0].name);
     this.init();
   }
 
-  private createInitialState(): RiskProfile {
+  private createInitialState(id: string, name: string): RiskProfile {
+    const isCritical = name === "SARAH CONNOR"; // Simulate different levels
     return {
-      applicantId: SUBJECTS[0].id,
-      applicantName: SUBJECTS[0].name,
+      applicantId: id,
+      applicantName: name,
       currentStep: ApplicationStep.KAFKA_INGEST,
       telemetry: {
         keystrokeJitter: 0.12,
@@ -36,8 +39,8 @@ class JavaFintechEngine {
         networkType: 'WIFI'
       },
       judges: {
-        tabularScore: 0.15,
-        sequentialScore: 0.10,
+        tabularScore: isCritical ? 0.85 : 0.15,
+        sequentialScore: isCritical ? 0.70 : 0.10,
         graphScore: 0.05,
         inferenceTimeMs: 12.4
       },
@@ -72,16 +75,29 @@ class JavaFintechEngine {
         { name: 'LEDGER-CORE', status: 'UP', latency: 12, version: 'v1.1.0' },
         { name: 'KAFKA-CLUSTER', status: 'UP', latency: 2, version: 'v3.6.0' }
       ],
-      siprScore: 0.10,
+      siprScore: isCritical ? 0.92 : 0.10,
       explanation: [
-        { feature: "JVM_TRUST_SCORE", impact: -0.15 },
-        { feature: "CASHFLOW_STABILITY", impact: -0.25 },
+        { feature: "JVM_TRUST_SCORE", impact: isCritical ? 0.45 : -0.15 },
+        { feature: "CASHFLOW_STABILITY", impact: isCritical ? 0.35 : -0.25 },
         { feature: "BEHAVIORAL_VECTOR", impact: 0.05 }
       ],
-      riskLevel: RiskLevel.LOW,
-      anomalies: [],
+      riskLevel: isCritical ? RiskLevel.CRITICAL : RiskLevel.LOW,
+      anomalies: isCritical ? [
+        { id: 'ANM-01', type: AnomalyType.BEHAVIORAL, description: 'Neural pattern mismatch in signature block.', severity: 0.95, detectedAt: new Date().toISOString() }
+      ] : [],
       collections: {
-        cases: [],
+        cases: [
+          {
+            loanId: `LN-AEGIS-${id.split('-')[1]}`,
+            applicantName: name,
+            daysPastDue: isCritical ? 45 : 0,
+            amountDue: isCritical ? 2450.50 : 0,
+            strategy: isCritical ? CollectionStrategy.HARD_NEGOTIATION : CollectionStrategy.PREVENTIVE_PUSH,
+            cluster: isCritical ? DebtorCluster.NEGLIGENT : DebtorCluster.FORGETFUL,
+            recoveryProbability: isCritical ? 0.42 : 0.98,
+            lastInteraction: new Date().toISOString()
+          }
+        ],
         metrics: {
           costToCollect: 0.012,
           recoveryRate: 0.82,
@@ -90,7 +106,7 @@ class JavaFintechEngine {
         }
       },
       lastAuditBlock: {
-        id: "GENESIS",
+        id: generateHash().slice(0, 8),
         hash: generateHash(),
         timestamp: new Date().toISOString()
       }
@@ -123,6 +139,14 @@ class JavaFintechEngine {
     this.state.backend.kafkaOffset = this.kafkaCounter;
     this.state.backend.heapUsage = Math.min(95, Math.max(10, this.state.backend.heapUsage + (Math.random() - 0.5) * 2));
     this.state.backend.p99Latency = Math.max(0.8, this.state.backend.p99Latency + (Math.random() - 0.5) * 0.1);
+  }
+
+  public selectSubject(id: string) {
+    const sub = SUBJECTS.find(s => s.id === id);
+    if (sub) {
+      this.state = this.createInitialState(sub.id, sub.name);
+      this.broadcast();
+    }
   }
 
   public subscribe(fn: (data: RiskProfile) => void) {

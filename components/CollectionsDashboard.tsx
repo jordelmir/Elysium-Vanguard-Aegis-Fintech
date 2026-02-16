@@ -12,35 +12,34 @@ const CollectionsDashboard: React.FC<CollectionsDashboardProps> = ({ cases, metr
   const [selectedCase, setSelectedCase] = useState<CollectionCase | null>(cases[0]);
 
   return (
-    <div className="h-full flex flex-col gap-6 lg:gap-10 animate-in fade-in slide-in-from-right-12 duration-1000">
+    <div className="h-full flex flex-col gap-8 lg:gap-10 animate-in fade-in slide-in-from-right-12 duration-1000">
       
-      {/* KPI HUD - Responsive Fluid Grid */}
+      {/* KPI HUD */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 shrink-0">
-        <MetricTile label="Costo_Operativo" value={`$${metrics.costToCollect.toFixed(3)}`} status="success" />
-        <MetricTile label="Tasa_Recuperación" value={`${(metrics.recoveryRate * 100).toFixed(1)}%`} status="neutral" />
+        <MetricTile label="Costo_Op" value={`$${metrics.costToCollect.toFixed(3)}`} status="success" />
+        <MetricTile label="Recuperación" value={`${(metrics.recoveryRate * 100).toFixed(1)}%`} status="neutral" />
         <MetricTile label="Cure_Rate" value={`${(metrics.cureRate * 100).toFixed(1)}%`} status="success" />
         <MetricTile label="Bots_Activos" value={metrics.activeNegotiations.toString()} status="warning" />
       </div>
 
-      {/* WORKSPACE MATRIX - Optimized Grid Breakdown */}
-      <div className="flex-1 flex flex-col lg:grid lg:grid-cols-12 gap-6 lg:gap-10 min-h-0 overflow-hidden">
+      {/* WORKSPACE MATRIX - Ajustado para no cortarse en móvil */}
+      <div className="flex-none lg:flex-1 flex flex-col lg:grid lg:grid-cols-12 gap-8 lg:gap-10 min-h-0 lg:overflow-hidden">
         
-        {/* NBA QUEUE - Left/Top Column */}
-        <div className="lg:col-span-7 flex flex-col bg-slate-900/40 border border-white/5 rounded-[3rem] p-6 md:p-10 backdrop-blur-2xl overflow-hidden shadow-2xl">
+        {/* NBA QUEUE */}
+        <div className="lg:col-span-7 flex flex-col bg-slate-900/40 border border-white/5 rounded-[3rem] p-6 md:p-10 backdrop-blur-2xl lg:overflow-hidden shadow-2xl">
            <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8 border-b border-white/5 pb-6">
               <div className="space-y-1">
                 <h3 className="text-xs md:text-sm font-black text-white uppercase tracking-[0.3em] flex items-center gap-3 italic">
                   <span className="w-2 h-2 bg-amber-500 rounded-full animate-ping shadow-[0_0_15px_orange]"></span>
                   Neural_NBA_Stream
                 </h3>
-                <p className="text-[9px] font-mono text-slate-600 uppercase tracking-widest font-black">Next_Best_Action_Intelligence</p>
               </div>
-              <div className="hidden md:block px-4 py-2 bg-white/5 rounded-full text-[10px] font-mono text-slate-500 uppercase tracking-widest border border-white/5">
+              <div className="px-4 py-2 bg-white/5 rounded-full text-[9px] font-mono text-slate-500 uppercase tracking-widest border border-white/5">
                 Cluster_Matrix_Active
               </div>
            </header>
            
-           <div className="flex-1 overflow-y-auto pr-3 custom-scrollbar flex flex-col gap-3 min-h-[300px]">
+           <div className="lg:flex-1 lg:overflow-y-auto no-scrollbar flex flex-col gap-3 min-h-[400px]">
               {cases.map((c) => (
                 <button 
                   key={c.loanId} 
@@ -63,20 +62,14 @@ const CollectionsDashboard: React.FC<CollectionsDashboardProps> = ({ cases, metr
                     <div className={`text-[9px] font-black uppercase tracking-widest px-3 py-1 bg-white/5 rounded-full border border-white/5 ${getStrategyColor(c.strategy)}`}>
                       {c.strategy.split('_')[0]}
                     </div>
-                    <div className="flex items-center gap-2">
-                       <span className="text-[10px] font-mono font-black text-slate-500">{(c.recoveryProbability * 100).toFixed(0)}%</span>
-                       <div className="w-16 h-1 bg-slate-900 rounded-full overflow-hidden shadow-inner">
-                         <div className={`h-full ${getProbColor(c.recoveryProbability)} transition-all duration-1000 shadow-[0_0_5px_currentColor]`} style={{width: `${c.recoveryProbability * 100}%`}}></div>
-                       </div>
-                    </div>
                   </div>
                 </button>
               ))}
            </div>
         </div>
 
-        {/* NEURAL NEGOTIATOR - Right/Bottom Column */}
-        <div className="lg:col-span-5 h-[550px] lg:h-full min-h-[450px]">
+        {/* NEURAL NEGOTIATOR */}
+        <div className="lg:col-span-5 h-[600px] lg:h-full">
            <NeuralNegotiator activeCase={selectedCase} />
         </div>
 
@@ -86,12 +79,9 @@ const CollectionsDashboard: React.FC<CollectionsDashboardProps> = ({ cases, metr
 };
 
 const MetricTile: React.FC<{ label: string; value: string; status: string }> = ({ label, value, status }) => (
-  <div className="bg-slate-900/30 border border-white/5 p-6 rounded-[2.5rem] backdrop-blur-md grid gap-1.5 shadow-inner group hover:bg-white/5 transition-all">
-    <div className="text-[9px] font-mono text-slate-600 uppercase tracking-widest font-black group-hover:text-slate-400 transition-colors">{label}</div>
-    <div className={`text-2xl md:text-3xl font-black font-mono tracking-tighter ${status === 'success' ? 'text-emerald-400' : status === 'warning' ? 'text-amber-400' : 'text-white'}`}>{value}</div>
-    <div className="h-1 w-12 bg-white/5 mt-1 rounded-full overflow-hidden">
-       <div className={`h-full opacity-50 transition-all duration-1000 ${status === 'success' ? 'bg-emerald-500' : 'bg-current'}`} style={{width: '70%'}}></div>
-    </div>
+  <div className="bg-slate-900/30 border border-white/5 p-5 md:p-6 rounded-[2.5rem] backdrop-blur-md grid gap-1 shadow-inner group hover:bg-white/5 transition-all">
+    <div className="text-[9px] font-mono text-slate-600 uppercase tracking-widest font-black">{label}</div>
+    <div className={`text-xl md:text-3xl font-black font-mono tracking-tighter ${status === 'success' ? 'text-emerald-400' : status === 'warning' ? 'text-amber-400' : 'text-white'}`}>{value}</div>
   </div>
 );
 
@@ -114,11 +104,5 @@ const getStrategyColor = (strategy: CollectionStrategy) => {
     default: return 'text-slate-400';
   }
 };
-
-const getProbColor = (p: number) => {
-  if (p > 0.8) return 'bg-emerald-500';
-  if (p > 0.4) return 'bg-amber-500';
-  return 'bg-red-600';
-}
 
 export default CollectionsDashboard;
