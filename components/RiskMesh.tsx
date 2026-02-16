@@ -1,17 +1,9 @@
+
 import React, { useRef, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 
-// Explicitly extend JSX.IntrinsicElements to include R3F elements used in this file
-declare global {
-  namespace JSX {
-    interface IntrinsicElements {
-      mesh: any;
-      icosahedronGeometry: any;
-      shaderMaterial: any;
-    }
-  }
-}
+// Removed manual JSX.IntrinsicElements declaration to prevent shadowing standard React HTML types
 
 interface RiskMeshProps {
   siprScore: number;

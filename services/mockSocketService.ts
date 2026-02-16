@@ -1,149 +1,208 @@
-import { RiskProfile, RiskLevel, AnomalyType, Anomaly, LedgerBlock } from '../types';
 
-// Generators for mock data
-const generateHash = () => Array.from({ length: 64 }, () => Math.floor(Math.random() * 16).toString(16)).join('');
+import { 
+  RiskProfile, RiskLevel, ApplicationStep, Anomaly, AnomalyType, 
+  CollectionStrategy, DebtorCluster, CollectionCase, CollectionMetrics 
+} from '../types';
 
-const INITIAL_PROFILE: RiskProfile = {
-  applicantId: "SUBJ-8821-X",
-  siprScore: 0.45,
-  forensicIntegrityScore: 0.98,
-  riskLevel: RiskLevel.LOW,
-  anomalies: [],
-  vectors: [
-    { dimension: "Liquidity Velocity", value: 85 },
-    { dimension: "Debt Saturation", value: 30 },
-    { dimension: "Collateral Elasticity", value: 60 }
-  ],
-  lastAuditBlock: {
-    blockId: "BLK-0000-GENESIS",
-    hash: generateHash(),
-    previousHash: "0000000000000000",
-    timestamp: new Date().toISOString(),
-    actor: "SYSTEM_BOOTSTRAP",
-    status: 'VERIFIED'
-  }
-};
+const generateHash = () => Array.from({ length: 32 }, () => Math.floor(Math.random() * 16).toString(16)).join('');
 
-type Listener = (data: RiskProfile) => void;
+const SUBJECTS = [
+  { name: "ELON V. MASK", id: "NODE-772-X" },
+  { name: "SARAH CONNOR", id: "NODE-101-T" },
+  { name: "NEO ANDERSON", id: "NODE-001-Z" }
+];
 
-class MockBioSocket {
-  private listeners: Listener[] = [];
-  private currentProfile: RiskProfile = { ...INITIAL_PROFILE };
-  private intervalId: number | null = null;
-  private overrideMode: 'NORMAL' | 'BREACH' | null = null;
+class JavaFintechEngine {
+  private listeners: ((data: RiskProfile) => void)[] = [];
+  private state: RiskProfile;
+  private kafkaCounter = 442190;
 
   constructor() {
-    this.startSimulation();
+    this.state = this.createInitialState();
+    this.init();
   }
 
-  public subscribe(callback: Listener): () => void {
-    this.listeners.push(callback);
-    callback(this.currentProfile); // Immediate initial data
-    return () => {
-      this.listeners = this.listeners.filter(l => l !== callback);
+  private createInitialState(): RiskProfile {
+    return {
+      applicantId: SUBJECTS[0].id,
+      applicantName: SUBJECTS[0].name,
+      currentStep: ApplicationStep.KAFKA_INGEST,
+      telemetry: {
+        keystrokeJitter: 0.12,
+        scrollVelocity: 450,
+        deviceStability: 0.98,
+        batteryStatus: 85,
+        isCharging: true,
+        networkType: 'WIFI'
+      },
+      judges: {
+        tabularScore: 0.15,
+        sequentialScore: 0.10,
+        graphScore: 0.05,
+        inferenceTimeMs: 12.4
+      },
+      backend: {
+        virtualThreads: 1024,
+        heapUsage: 22.5,
+        p99Latency: 1.2,
+        gcActivity: 'IDLE',
+        kafkaOffset: this.kafkaCounter
+      },
+      siprScore: 0.10,
+      explanation: [
+        { feature: "JVM_TRUST_SCORE", impact: -0.15 },
+        { feature: "CASHFLOW_STABILITY", impact: -0.25 },
+        { feature: "BEHAVIORAL_VECTOR", impact: 0.05 }
+      ],
+      riskLevel: RiskLevel.LOW,
+      anomalies: [],
+      collections: {
+        cases: this.generateInitialCollectionCases(),
+        metrics: {
+          costToCollect: 0.012,
+          recoveryRate: 0.82,
+          cureRate: 0.65,
+          activeNegotiations: 42
+        }
+      },
+      lastAuditBlock: {
+        id: "GENESIS",
+        hash: generateHash(),
+        timestamp: new Date().toISOString()
+      }
     };
   }
 
-  // New: Allow UI to force specific scenarios
-  public triggerScenario(scenario: 'NORMAL' | 'BREACH') {
-    this.overrideMode = scenario;
-    this.runSimulationStep(); // Immediate update
+  private generateInitialCollectionCases(): CollectionCase[] {
+    return [
+      {
+        loanId: "LN-101",
+        applicantName: "ALEX MURPHY",
+        daysPastDue: 14,
+        amountDue: 450,
+        strategy: CollectionStrategy.SOFT_NEGOTIATION,
+        cluster: DebtorCluster.FORGETFUL,
+        recoveryProbability: 0.92,
+        lastInteraction: "AI_BOT: SMS_SENT"
+      },
+      {
+        loanId: "LN-202",
+        applicantName: "ELLEN RIPLEY",
+        daysPastDue: 45,
+        amountDue: 1200,
+        strategy: CollectionStrategy.HARD_NEGOTIATION,
+        cluster: DebtorCluster.NEGLIGENT,
+        recoveryProbability: 0.45,
+        lastInteraction: "AI_BOT: WHATSAPP_REPLY_PENDING"
+      },
+      {
+        loanId: "LN-303",
+        applicantName: "HANS GRUBER",
+        daysPastDue: 92,
+        amountDue: 5000,
+        strategy: CollectionStrategy.LEGAL_NUCLEAR,
+        cluster: DebtorCluster.FRAUDULENT,
+        recoveryProbability: 0.05,
+        lastInteraction: "SYSTEM: BUREAU_REPORTED"
+      }
+    ];
   }
 
-  private broadcast() {
-    this.listeners.forEach(l => l(this.currentProfile));
+  private init() {
+    setInterval(() => {
+      this.processStep();
+      this.updateBackendTelemetry();
+      this.updateCollectionsDynamics();
+      this.listeners.forEach(l => l({ ...this.state }));
+    }, 2500);
   }
 
-  private runSimulationStep() {
-    let newScore = this.currentProfile.siprScore;
+  private updateCollectionsDynamics() {
+    // Simular el motor NBA actualizando probabilidades
+    this.state.collections.cases = this.state.collections.cases.map(c => ({
+      ...c,
+      recoveryProbability: Math.min(1, Math.max(0, c.recoveryProbability + (Math.random() - 0.5) * 0.05)),
+      lastInteraction: Math.random() > 0.7 ? `AI_BOT: RE_NEGOTIATING_${Math.floor(Date.now()/100000)}` : c.lastInteraction
+    }));
 
-    if (this.overrideMode === 'BREACH') {
-        // Force high risk
-        newScore = Math.min(0.98, newScore + 0.05);
-    } else if (this.overrideMode === 'NORMAL') {
-        // Force recovery
-        newScore = Math.max(0.15, newScore - 0.05);
-    } else {
-        // Natural fluctuation
-        const delta = (Math.random() - 0.45) * 0.05;
-        newScore += delta;
-        // Occasional spike
-        if (Math.random() > 0.98) newScore += 0.15;
-    }
-    
-    // Clamp
-    newScore = Math.max(0, Math.min(1, newScore));
+    // Actualizar métricas globales de cobranza
+    this.state.collections.metrics = {
+      costToCollect: 0.01 + Math.random() * 0.005,
+      recoveryRate: 0.8 + Math.random() * 0.05,
+      cureRate: 0.6 + Math.random() * 0.1,
+      activeNegotiations: 40 + Math.floor(Math.random() * 10)
+    };
+  }
 
-    // Determine Risk Level
-    let level = RiskLevel.LOW;
-    if (newScore > 0.6) level = RiskLevel.MEDIUM;
-    if (newScore > 0.8) level = RiskLevel.HIGH;
-    if (newScore > 0.9) level = RiskLevel.CRITICAL;
+  private updateBackendTelemetry() {
+    this.kafkaCounter += Math.floor(Math.random() * 50);
+    this.state.backend = {
+      virtualThreads: 5000 + Math.floor(Math.random() * 15000),
+      heapUsage: 30 + Math.sin(Date.now() / 10000) * 10,
+      p99Latency: 0.8 + Math.random() * 0.4,
+      gcActivity: Math.random() > 0.9 ? 'ZGC_RUNNING' : 'IDLE',
+      kafkaOffset: this.kafkaCounter
+    };
+  }
 
-    // Generate Anomalies if risk is high (or forced breach)
-    const currentAnomalies = [...this.currentProfile.anomalies];
-    const shouldGenAnomaly = (newScore > 0.75 && Math.random() > 0.7) || (this.overrideMode === 'BREACH' && Math.random() > 0.5);
+  private processStep() {
+    const steps = Object.values(ApplicationStep);
+    const nextIdx = (steps.indexOf(this.state.currentStep) + 1) % steps.length;
+    const nextStep = steps[nextIdx];
 
-    if (shouldGenAnomaly) {
-      const types = Object.values(AnomalyType);
-      const newAnomaly: Anomaly = {
-        id: `ANM-${Math.floor(Math.random() * 9999)}`,
-        type: types[Math.floor(Math.random() * types.length)],
-        description: "Inconsistent temporal metadata in transaction log detected by forensic engine.",
-        severity: Math.random(),
-        detectedAt: new Date().toISOString()
-      };
-      currentAnomalies.unshift(newAnomaly);
-      if (currentAnomalies.length > 8) currentAnomalies.pop();
+    if (nextStep === ApplicationStep.KAFKA_INGEST) {
+      const sub = SUBJECTS[Math.floor(Math.random() * SUBJECTS.length)];
+      this.state.applicantName = sub.name;
+      this.state.applicantId = sub.id;
+      this.state.anomalies = [];
     }
 
-    // Update Ledger
-    const newBlock: LedgerBlock = {
-      blockId: `BLK-${Math.floor(Date.now() / 1000)}`,
-      previousHash: this.currentProfile.lastAuditBlock.hash.substring(0, 16) + "...",
+    this.state.telemetry = {
+      keystrokeJitter: Math.random(),
+      scrollVelocity: Math.random() * 1000,
+      deviceStability: 0.5 + Math.random() * 0.5,
+      batteryStatus: Math.max(5, Math.floor(Math.random() * 100)),
+      isCharging: Math.random() > 0.5,
+      networkType: Math.random() > 0.9 ? 'VPN_DETECTED' : 'WIFI'
+    };
+
+    this.state.judges = {
+      tabularScore: Math.random(),
+      sequentialScore: Math.random(),
+      graphScore: this.state.telemetry.networkType === 'VPN_DETECTED' ? 0.98 : Math.random() * 0.2,
+      inferenceTimeMs: 4.2 + Math.random() * 8.5
+    };
+
+    this.state.siprScore = (this.state.judges.tabularScore * 0.45) + 
+                           (this.state.judges.sequentialScore * 0.35) + 
+                           (this.state.judges.graphScore * 0.2);
+
+    this.state.riskLevel = this.state.siprScore > 0.8 ? RiskLevel.CRITICAL : 
+                           this.state.siprScore > 0.5 ? RiskLevel.HIGH : 
+                           this.state.siprScore > 0.2 ? RiskLevel.MEDIUM : RiskLevel.LOW;
+
+    this.state.currentStep = nextStep;
+    this.state.lastAuditBlock = {
+      id: `BLK-${Math.floor(Math.random()*10000)}`,
       hash: generateHash(),
-      timestamp: new Date().toISOString(),
-      actor: "AI_ORCHESTRATOR_SVC",
-      status: 'VERIFIED'
+      timestamp: new Date().toISOString()
     };
 
-    // Update Integrity inversely to Risk
-    let newIntegrity = this.currentProfile.forensicIntegrityScore;
-    if (newScore > 0.8) newIntegrity = Math.max(0.4, newIntegrity - 0.02);
-    else newIntegrity = Math.min(1.0, newIntegrity + 0.01);
-
-    this.currentProfile = {
-      ...this.currentProfile,
-      siprScore: newScore,
-      forensicIntegrityScore: newIntegrity,
-      riskLevel: level,
-      anomalies: currentAnomalies,
-      lastAuditBlock: newBlock,
-      vectors: this.currentProfile.vectors.map(v => ({
-          ...v,
-          value: Math.max(0, Math.min(100, v.value + (Math.random() - 0.5) * 15))
-      }))
-    };
-
-    this.broadcast();
-  }
-
-  private startSimulation() {
-    this.intervalId = window.setInterval(() => {
-        this.runSimulationStep();
-    }, 2000); // 2 second heartbeat
-  }
-
-  // Helper for charts
-  public getHistory(metric: string) {
-    const data = [];
-    let val = 50;
-    for(let i=0; i<20; i++) {
-        val = Math.max(0, Math.min(100, val + (Math.random() - 0.5) * 20));
-        data.push({ time: `T-${20-i}`, value: val });
+    if (this.state.riskLevel === RiskLevel.CRITICAL && this.state.anomalies.length === 0) {
+      this.state.anomalies.push({
+        id: `ANM-${Math.floor(Math.random() * 9999)}`,
+        type: AnomalyType.METADATA,
+        description: "ONNX Confidence Mismatch: Device profile suggests bot farm emulation.",
+        severity: 0.95,
+        detectedAt: new Date().toISOString()
+      });
     }
-    return data;
+  }
+
+  public subscribe(fn: (data: RiskProfile) => void) {
+    this.listeners.push(fn);
+    return () => { this.listeners = this.listeners.filter(l => l !== fn); };
   }
 }
 
-export const bioSocket = new MockBioSocket();
+export const bioSocket = new JavaFintechEngine();

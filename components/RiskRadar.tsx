@@ -1,17 +1,10 @@
+
 import React, { Suspense } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, Stars } from '@react-three/drei';
 import RiskMesh from './RiskMesh';
 
-// Explicitly extend JSX.IntrinsicElements to include R3F elements used in this file
-declare global {
-  namespace JSX {
-    interface IntrinsicElements {
-      ambientLight: any;
-      pointLight: any;
-    }
-  }
-}
+// Removed manual JSX.IntrinsicElements declaration to prevent shadowing standard React HTML types
 
 interface RiskRadarProps {
   siprScore: number;
