@@ -17,5 +17,12 @@ public class RiskProfile {
     private double siprScore;
     private String currentStep;
     private List<Anomaly> anomalies;
+    private BackendMetrics backend;
+    private Pipeline pipeline;
+    private List<ClusterNode> cluster;
+    private List<ServiceStatus> services;
+    private SecurityPerimeter security;
+    private Collections collections;
+    private SubjectSummary subjectSummary;
     private Object aiAudit;
 }

@@ -25,15 +25,15 @@ const App: React.FC = () => {
       const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
       const prompt = `Act as a senior risk auditor. Analyze this data packet: ${JSON.stringify(data)}. 
       Return a JSON object with: verdict, reasoning (3 technical points), and confidence (0-1).`;
-      
+
       const response = await ai.models.generateContent({
         model: 'gemini-3-flash-preview',
         contents: prompt,
-        config: { 
-          responseMimeType: "application/json" 
+        config: {
+          responseMimeType: "application/json"
         }
       });
-      
+
       const auditResult = JSON.parse(response.text || "{}");
       setData(prev => prev ? { ...prev, aiAudit: auditResult } : null);
     } catch (e) { console.error(e); } finally { setIsAuditing(false); }
@@ -79,7 +79,7 @@ const App: React.FC = () => {
           <p>BIO_METRIC_BUFFER: 0x82A10F</p>
         </div>
       </div>
-      
+
       <style>{`
         @keyframes scan {
           0% { transform: translateX(-100%); }
@@ -93,17 +93,17 @@ const App: React.FC = () => {
     return <AuthScreen onLogin={handleLogin} />;
   }
 
-  const isCritical = data.riskLevel === RiskLevel.CRITICAL;
+  const isCritical = data?.riskLevel === RiskLevel.CRITICAL;
 
   return (
     <div className={`h-[100dvh] w-full bg-[#000] flex flex-col transition-all duration-1000 overflow-hidden ${isCritical ? 'risk-critical' : ''}`}>
       {/* Shell Container */}
       <div className="flex-1 w-full 2xl:max-w-[1920px] 2xl:mx-auto 2xl:border-x 2xl:border-white/5 flex flex-col bg-[#02040a] relative overflow-hidden">
-        
+
         {/* HEADER HUD */}
         <header className="h-16 md:h-20 border-b border-white/10 glass flex items-center justify-between px-4 md:px-12 z-[100] shrink-0">
           <div className="flex items-center gap-4">
-            <div 
+            <div
               onClick={handleLogout}
               className={`w-10 h-10 rounded-xl grid place-items-center font-black text-sm ${isCritical ? 'bg-red-600' : 'bg-cyan-600'} shadow-[0_0_20px_rgba(0,242,255,0.4)] cursor-pointer hover:scale-105 active:scale-95 transition-transform`}
             >Æ</div>
@@ -115,7 +115,7 @@ const App: React.FC = () => {
 
           <div className="flex items-center gap-4 md:gap-10">
             {userRole === USER_ROLE.ADMIN && (
-              <button 
+              <button
                 onClick={runAiAudit}
                 disabled={isAuditing}
                 className="hidden lg:flex items-center gap-3 px-6 py-2.5 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 transition-all group"
@@ -145,8 +145,8 @@ const App: React.FC = () => {
         {/* FOOTER HUD */}
         <footer className="h-10 border-t border-white/5 bg-black/80 backdrop-blur-3xl flex items-center justify-between px-6 z-50 shrink-0">
           <div className="flex items-center gap-4">
-             <span className={`w-1.5 h-1.5 rounded-full ${isCritical ? 'bg-red-500 animate-pulse' : 'bg-emerald-500 shadow-[0_0_8px_#10b981]'}`}></span>
-             <span className="text-[9px] font-black uppercase tracking-widest text-slate-600">Auth: {userRole} // Net: P2P_ENCRYPTED</span>
+            <span className={`w-1.5 h-1.5 rounded-full ${isCritical ? 'bg-red-500 animate-pulse' : 'bg-emerald-500 shadow-[0_0_8px_#10b981]'}`}></span>
+            <span className="text-[9px] font-black uppercase tracking-widest text-slate-600">Auth: {userRole} // Net: P2P_ENCRYPTED</span>
           </div>
           <div className="hidden md:block text-[9px] font-mono text-slate-800 uppercase font-black italic tracking-[0.5em]">
             Sovereign_Liquidity_Cortex
