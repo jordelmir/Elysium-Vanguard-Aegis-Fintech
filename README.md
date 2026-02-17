@@ -69,20 +69,53 @@ Para compilar la aplicación para producción:
 npm run build
 ```
 
+### Backend (Java & Spring Boot)
+
+1. **Navegar al directorio del backend**:
+
+   ```bash
+   cd backend
+   ```
+
+2. **Compilar el proyecto**:
+
+   ```bash
+   chmod +x gradlew
+   ./gradlew build
+   ```
+
+3. **Ejecutar el servidor**:
+
+   ```bash
+   ./gradlew bootRun
+   ```
+
+   *El backend estará disponible en `http://localhost:8080`.*
+
+---
+
+## 🏗️ Arquitectura Full-Stack
+
+Este sistema utiliza una arquitectura desacoplada para máxima seguridad:
+
+- **Frontend**: React + Vite (Puerto 3000)
+- **Backend Edge**: Spring Boot 3.2 (Puerto 8080)
+- **Comunicación**: REST API con políticas CORS de circuito cerrado.
+
 ## 📜 Créditos y Autoría
 
-Este proyecto ha sido concebido y desarrollado bajo una visión de excelencia tecnológica.
+Este proyecto ha sido concebido y desarrollado bajo una visión de excelencia tecnológica para la integración Full-Stack.
 
 - **Lead Visionary & Architect**: [Jordelmir](https://github.com/jordelmir)
 - **AI Synthesis Engineering**: Antigravity (Advanced Agentic AI by Google DeepMind)
 
 ---
 
-## 🏆 Sello de Excelencia
+## 🏆 Sello de Excelencia Full-Stack
 
 <div align="center">
-  <img src="https://img.shields.io/badge/Sello_de_Calidad-Jordelmir_Premium-black?style=for-the-badge&logo=shield" alt="Seal" />
-  <p><i>"Innovación sin límites, Seguridad sin fisuras."</i></p>
+  <img src="https://img.shields.io/badge/Sello_de_Calidad-Jordelmir_Premium_FullStack-black?style=for-the-badge&logo=shield" alt="Seal" />
+  <p><i>"Innovación sin límites, Seguridad sin fisuras en todo el stack."</i></p>
 </div>
 
 ---
