@@ -94,6 +94,17 @@ npm run build
 
 ---
 
+### 🛡️ Core Resiliency & Compliance (Audit 2026)
+
+Certified architecture compliance following the **Zero Trust Master Audit**:
+
+- **Fault Tolerance**: Circuit Breaker & Exponential Backoff (Client-Side).
+- **Data Integrity**: `X-Idempotency-Key` enforcement & Optimistic Locking (@Version).
+- **Concurrency**: Versioned State Transitions in distributed metrics.
+- **Observability**: SLI/SLO Baseline implemented in Mock Service metrics.
+
+---
+
 ## 🏗️ Arquitectura Full-Stack & Stability Audit
 
 Este sistema ha sido sometido a un riguroso **Stability Audit** para garantizar un rendimiento "Top Mundial":

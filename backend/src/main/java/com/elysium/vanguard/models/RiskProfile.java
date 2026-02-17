@@ -25,4 +25,5 @@ public class RiskProfile {
     private Collections collections;
     private SubjectSummary subjectSummary;
     private Object aiAudit;
+    private long version;
 }

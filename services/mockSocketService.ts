@@ -100,17 +100,65 @@ const MOCK_PROFILE: RiskProfile = {
   aiAudit: {}
 };
 
+// RESILIENCY CONSTANTS
+const INITIAL_RETRY_DELAY = 1000;
+const MAX_RETRY_DELAY = 30000;
+const BACKOFF_FACTOR = 1.5;
+const JITTER_FACTOR = 0.2;
+const FAILURE_THRESHOLD = 3;
+
+enum CircuitState { CLOSED, OPEN, HALF_OPEN }
+
 export const bioSocket = {
   subscribe: (callback: (data: RiskProfile) => void) => {
-    // Immediate callback with mock data
+    let retryDelay = INITIAL_RETRY_DELAY;
+    let failureCount = 0;
+    let state = CircuitState.CLOSED;
+    let timeoutId: any = null;
+    let isSubscribed = true;
+
+    // Immediate callback with baseline mock data
     callback(MOCK_PROFILE);
 
-    const interval = setInterval(async () => {
+    const schedulePoll = (delay: number) => {
+      if (!isSubscribed) return;
+      timeoutId = setTimeout(poll, delay);
+    };
+
+    const poll = async () => {
+      if (state === CircuitState.OPEN) {
+        console.warn('⚠️ [CIRCUIT_BREAKER] State is OPEN. Skipping poll to allow recovery.');
+        schedulePoll(MAX_RETRY_DELAY);
+        return;
+      }
+
       try {
         const data = await riskService.getProfile();
+
+        // SUCCESS: Reset resiliency state
+        failureCount = 0;
+        retryDelay = INITIAL_RETRY_DELAY;
+        state = CircuitState.CLOSED;
         callback(data);
+
+        // Standard poll interval
+        schedulePoll(3000);
       } catch (e) {
-        // Silently fallback to mock updates
+        failureCount++;
+
+        // Calculate exponential backoff with jitter
+        const jitter = retryDelay * JITTER_FACTOR * (Math.random() * 2 - 1);
+        retryDelay = Math.min(retryDelay * BACKOFF_FACTOR, MAX_RETRY_DELAY);
+        const nextDelay = retryDelay + jitter;
+
+        console.error(`🚨 [CIRCUIT_BREAKER] Failure ${failureCount}/${FAILURE_THRESHOLD}. Retrying in ${Math.round(nextDelay)}ms`);
+
+        if (failureCount >= FAILURE_THRESHOLD) {
+          state = CircuitState.OPEN;
+          console.error('❌ [CIRCUIT_BREAKER] THRESHOLD REACHED. CIRCUIT IS NOW OPEN.');
+        }
+
+        // Silently fallback to mock safe-updates while retrying
         callback({
           ...MOCK_PROFILE,
           backend: {
@@ -118,11 +166,20 @@ export const bioSocket = {
             throughput: MOCK_PROFILE.backend.throughput + Math.floor(Math.random() * 100)
           }
         });
+
+        schedulePoll(nextDelay);
       }
-    }, 3000);
-    return () => clearInterval(interval);
+    };
+
+    // Start the poll loop
+    schedulePoll(3000);
+
+    return () => {
+      isSubscribed = false;
+      if (timeoutId) clearTimeout(timeoutId);
+    };
   },
   selectSubject: (id: string) => {
-    console.log(`Focus node changed: ${id}`);
+    console.log(`[SOVEREIGN_ROOT] Focus node changed: ${id}`);
   }
 };
