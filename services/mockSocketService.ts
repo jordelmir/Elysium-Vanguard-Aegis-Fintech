@@ -18,6 +18,9 @@ export const riskService = {
 // Legacy Mock Service for backward compatibility or offline mode
 export const bioSocket = {
   subscribe: (callback: (data: RiskProfile) => void) => {
+    // Immediate fetch to avoid black screen delay
+    riskService.getProfile().then(callback).catch(() => { });
+
     const interval = setInterval(async () => {
       try {
         const data = await riskService.getProfile();
