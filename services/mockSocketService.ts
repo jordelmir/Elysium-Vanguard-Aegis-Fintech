@@ -15,7 +15,12 @@ export const riskService = {
   }
 };
 
-// Legacy Mock Service for backward compatibility or offline mode
+export const SUBJECTS = [
+  { id: 'SARAH_CONNOR_9LX', name: 'SARAH CONNOR' },
+  { id: 'T800_NET_01', name: 'CYBERDYNE T800' },
+  { id: 'KYLE_REESE_84', name: 'KYLE REESE' }
+];
+
 export const bioSocket = {
   subscribe: (callback: (data: RiskProfile) => void) => {
     // Immediate fetch to avoid black screen delay
@@ -30,5 +35,8 @@ export const bioSocket = {
       }
     }, 5000);
     return () => clearInterval(interval);
+  },
+  selectSubject: (id: string) => {
+    console.log(`Switching focus to node: ${id}`);
   }
 };
