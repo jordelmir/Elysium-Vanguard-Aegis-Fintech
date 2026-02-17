@@ -14,6 +14,7 @@ public class BackendMetrics {
     private double heapUsage;
     private double p99Latency;
     private String gcActivity; // IDLE, ZGC_RUNNING, CLEANUP
+    private double errorRate;
     private long kafkaOffset;
     private int throughput;
 }

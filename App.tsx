@@ -128,6 +128,12 @@ const App: React.FC = () => {
               <span className="text-[9px] font-mono text-slate-700 uppercase font-black">Sync_Uplink</span>
               <span className="text-xs md:text-sm font-black text-white/80 font-mono tracking-tighter">{new Date().toLocaleTimeString('en-GB', { hour12: false })}</span>
             </div>
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-red-500/10 border border-red-500/20 text-[9px] font-black text-red-500 uppercase tracking-widest hover:bg-red-500 hover:text-white transition-all ml-4"
+            >
+              <span>EXIT_ENCLAVE</span>
+            </button>
           </div>
         </header>
 

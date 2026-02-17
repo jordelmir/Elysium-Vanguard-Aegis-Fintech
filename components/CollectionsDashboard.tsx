@@ -26,10 +26,10 @@ const CollectionsDashboard: React.FC<CollectionsDashboardProps> = ({ cases = [],
 
       {/* KPI HUD */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 shrink-0">
-        <MetricTile label="Costo_Op" value={`$${metrics.costToCollect.toFixed(3)}`} status="success" />
-        <MetricTile label="Recuperación" value={`${(metrics.recoveryRate * 100).toFixed(1)}%`} status="neutral" />
+        <MetricTile label="Op_Cost" value={`$${metrics.costToCollect.toFixed(3)}`} status="success" />
+        <MetricTile label="Recovery" value={`${(metrics.recoveryRate * 100).toFixed(1)}%`} status="neutral" />
         <MetricTile label="Cure_Rate" value={`${(metrics.cureRate * 100).toFixed(1)}%`} status="success" />
-        <MetricTile label="Bots_Activos" value={metrics.activeNegotiations.toString()} status="warning" />
+        <MetricTile label="Active_Bots" value={metrics.activeNegotiations.toString()} status="warning" />
       </div>
 
       {/* WORKSPACE MATRIX - Ajustado para no cortarse en móvil */}

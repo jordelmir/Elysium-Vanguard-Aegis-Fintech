@@ -1,4 +1,4 @@
-import { RiskProfile } from '../types';
+import { RiskProfile, RiskLevel } from '../types';
 
 const API_BASE_URL = 'http://localhost:8080/api';
 
@@ -109,70 +109,122 @@ const FAILURE_THRESHOLD = 3;
 
 enum CircuitState { CLOSED, OPEN, HALF_OPEN }
 
+const CORTEX_URL = 'http://localhost:8080/api/risk/profile';
+const TELEMETRY_URL = 'http://localhost:8081/api/telemetry';
+
+// Socket topics for internal use
+export const SOCKET_TOPICS = {
+  RISK: 'risk-profile',
+  TELEMETRY: 'telemetry-stream',
+  SYSTEM: 'system-status'
+};
+
+// Public Registry Data for SystemMonitor
+export const SUBJECTS = [
+  { id: "SARAH_CONNOR_9LX", name: "SARAH CONNOR", riskTier: "CRITICAL", status: "ACTIVE" },
+  { id: "JOHN_DOE_12X", name: "JOHN DOE", riskTier: "LOW", status: "ARCHIVED" },
+  { id: "ALICE_V_77", name: "ALICE VANCE", riskTier: "MEDIUM", status: "ACTIVE" }
+];
+
 export const bioSocket = {
   subscribe: (callback: (data: RiskProfile) => void) => {
-    let retryDelay = INITIAL_RETRY_DELAY;
-    let failureCount = 0;
-    let state = CircuitState.CLOSED;
-    let timeoutId: any = null;
     let isSubscribed = true;
+    let riskCircuit = { failureCount: 0, state: CircuitState.CLOSED, retryDelay: INITIAL_RETRY_DELAY };
+    let telemetryCircuit = { failureCount: 0, state: CircuitState.CLOSED, retryDelay: INITIAL_RETRY_DELAY };
+    let timeoutId: any = null;
 
-    // Immediate callback with baseline mock data
-    callback(MOCK_PROFILE);
+    // Baseline local state
+    let lastData: RiskProfile = { ...MOCK_PROFILE };
 
-    const schedulePoll = (delay: number) => {
-      if (!isSubscribed) return;
-      timeoutId = setTimeout(poll, delay);
+    const fetchService = async (url: string, circuit: any, serviceName: string) => {
+      if (circuit.state === CircuitState.OPEN) return null;
+
+      try {
+        const response = await fetch(url, { signal: AbortSignal.timeout(2000) });
+        if (!response.ok) throw new Error(`${serviceName} non-ok response`);
+
+        circuit.failureCount = 0;
+        circuit.retryDelay = INITIAL_RETRY_DELAY;
+        circuit.state = CircuitState.CLOSED;
+        return await response.json();
+      } catch (e) {
+        circuit.failureCount++;
+        circuit.retryDelay = Math.min(circuit.retryDelay * BACKOFF_FACTOR, MAX_RETRY_DELAY);
+
+        console.error(`🚨 [${serviceName}] Failure ${circuit.failureCount}/${FAILURE_THRESHOLD}`);
+
+        if (circuit.failureCount >= FAILURE_THRESHOLD) {
+          circuit.state = CircuitState.OPEN;
+          console.error(`❌ [${serviceName}] CIRCUIT OPENED.`);
+          // Auto-recovery attempt after 30s
+          setTimeout(() => {
+            circuit.state = CircuitState.CLOSED;
+            console.log(`🔄 [${serviceName}] Circuit reset for retry.`);
+          }, 30000);
+        }
+        return null;
+      }
     };
 
     const poll = async () => {
-      if (state === CircuitState.OPEN) {
-        console.warn('⚠️ [CIRCUIT_BREAKER] State is OPEN. Skipping poll to allow recovery.');
-        schedulePoll(MAX_RETRY_DELAY);
-        return;
-      }
+      if (!isSubscribed) return;
 
       try {
-        const data = await riskService.getProfile();
+        // DISTRIBUTED POLL: Dual Services
+        const [riskUpdate, telemetryUpdate] = await Promise.all([
+          fetchService(CORTEX_URL, riskCircuit, 'CORTEX').catch(() => null),
+          fetchService(TELEMETRY_URL, telemetryCircuit, 'TELEMETRY').catch(() => null)
+        ]);
 
-        // SUCCESS: Reset resiliency state
-        failureCount = 0;
-        retryDelay = INITIAL_RETRY_DELAY;
-        state = CircuitState.CLOSED;
-        callback(data);
+        // STABILITY HARDENING: Deep Merge Logic (Ironclad Edition)
+        // Prevents any service update from injecting nulls into required objects
+        const mergedRisk = riskUpdate ? {
+          ...lastData,
+          ...riskUpdate,
+          // DEFENSE: Never allow null to overwrite a required structure
+          backend: (riskUpdate.backend && typeof riskUpdate.backend === 'object') ? { ...lastData.backend, ...riskUpdate.backend } : lastData.backend,
+          pipeline: (riskUpdate.pipeline && typeof riskUpdate.pipeline === 'object') ? { ...lastData.pipeline, ...riskUpdate.pipeline } : lastData.pipeline,
+          collections: (riskUpdate.collections && typeof riskUpdate.collections === 'object') ? { ...lastData.collections, ...riskUpdate.collections } : lastData.collections,
+          cluster: Array.isArray(riskUpdate.cluster) ? riskUpdate.cluster : lastData.cluster,
+          services: Array.isArray(riskUpdate.services) ? riskUpdate.services : lastData.services,
+          security: (riskUpdate.security && typeof riskUpdate.security === 'object') ? { ...lastData.security, ...riskUpdate.security } : lastData.security,
+          anomalies: Array.isArray(riskUpdate.anomalies) ? riskUpdate.anomalies : lastData.anomalies,
+          judges: (riskUpdate.judges && typeof riskUpdate.judges === 'object') ? { ...lastData.judges, ...riskUpdate.judges } : lastData.judges,
+          aiAudit: riskUpdate.aiAudit || lastData.aiAudit || {},
+          lastAuditBlock: riskUpdate.lastAuditBlock || lastData.lastAuditBlock
+        } : lastData;
 
-        // Standard poll interval
-        schedulePoll(3000);
-      } catch (e) {
-        failureCount++;
-
-        // Calculate exponential backoff with jitter
-        const jitter = retryDelay * JITTER_FACTOR * (Math.random() * 2 - 1);
-        retryDelay = Math.min(retryDelay * BACKOFF_FACTOR, MAX_RETRY_DELAY);
-        const nextDelay = retryDelay + jitter;
-
-        console.error(`🚨 [CIRCUIT_BREAKER] Failure ${failureCount}/${FAILURE_THRESHOLD}. Retrying in ${Math.round(nextDelay)}ms`);
-
-        if (failureCount >= FAILURE_THRESHOLD) {
-          state = CircuitState.OPEN;
-          console.error('❌ [CIRCUIT_BREAKER] THRESHOLD REACHED. CIRCUIT IS NOW OPEN.');
-        }
-
-        // Silently fallback to mock safe-updates while retrying
-        callback({
-          ...MOCK_PROFILE,
-          backend: {
-            ...MOCK_PROFILE.backend,
-            throughput: MOCK_PROFILE.backend.throughput + Math.floor(Math.random() * 100)
+        lastData = {
+          ...mergedRisk,
+          telemetry: (telemetryUpdate && telemetryUpdate.data) ? {
+            ...mergedRisk.telemetry,
+            mouseVelocity: telemetryUpdate.data.mouseVelocity ?? mergedRisk.telemetry.mouseVelocity,
+            scrollConsistency: telemetryUpdate.data.scrollConsistency ?? mergedRisk.telemetry.scrollConsistency,
+            biometricSignature: telemetryUpdate.data.biometricSignature ?? mergedRisk.telemetry.biometricSignature,
+            timestamp: telemetryUpdate.data.timestamp
+          } : {
+            ...mergedRisk.telemetry,
+            // Simulated jitter if telemetry service is down
+            mouseVelocity: mergedRisk.telemetry.mouseVelocity + (Math.random() * 6 - 3),
+            biometricSignature: mergedRisk.telemetry.biometricSignature || 'AEGIS_OFFLINE_MODE'
           }
-        });
+        };
 
-        schedulePoll(nextDelay);
+        // DEBUG: Output state for local diagnosis
+        console.log('📡 [SYNC_ACTIVE] Aggregated Distributed State:', lastData.applicantId);
+        callback(lastData);
+      } catch (fatalError) {
+        console.error('❌ [FATAL_NODE_ERROR] Recovery Protocol Engaged:', fatalError);
+        // Fallback to last known good state if everything explodes
+        callback(lastData);
       }
+
+      timeoutId = setTimeout(poll, 3000);
     };
 
-    // Start the poll loop
-    schedulePoll(3000);
+    // Initial dispatch
+    callback(lastData);
+    poll();
 
     return () => {
       isSubscribed = false;
