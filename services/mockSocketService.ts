@@ -126,6 +126,9 @@ export const SUBJECTS = [
   { id: "ALICE_V_77", name: "ALICE VANCE", riskTier: "MEDIUM", status: "ACTIVE" }
 ];
 
+// Mutable state container for the mock service to share state between subscribe and selectSubject
+let currentMockState = { ...MOCK_PROFILE };
+
 export const bioSocket = {
   subscribe: (callback: (data: RiskProfile) => void) => {
     let isSubscribed = true;
@@ -133,8 +136,8 @@ export const bioSocket = {
     let telemetryCircuit = { failureCount: 0, state: CircuitState.CLOSED, retryDelay: INITIAL_RETRY_DELAY };
     let timeoutId: any = null;
 
-    // Baseline local state
-    let lastData: RiskProfile = { ...MOCK_PROFILE };
+    // Initialize with current global mock state
+    let lastData: RiskProfile = { ...currentMockState };
 
     const fetchService = async (url: string, circuit: any, serviceName: string) => {
       if (circuit.state === CircuitState.OPEN) return null;
@@ -150,17 +153,10 @@ export const bioSocket = {
       } catch (e) {
         circuit.failureCount++;
         circuit.retryDelay = Math.min(circuit.retryDelay * BACKOFF_FACTOR, MAX_RETRY_DELAY);
-
-        console.error(`🚨 [${serviceName}] Failure ${circuit.failureCount}/${FAILURE_THRESHOLD}`);
-
+        // console.error to avoid spamming usage
         if (circuit.failureCount >= FAILURE_THRESHOLD) {
           circuit.state = CircuitState.OPEN;
-          console.error(`❌ [${serviceName}] CIRCUIT OPENED.`);
-          // Auto-recovery attempt after 30s
-          setTimeout(() => {
-            circuit.state = CircuitState.CLOSED;
-            console.log(`🔄 [${serviceName}] Circuit reset for retry.`);
-          }, 30000);
+          setTimeout(() => { circuit.state = CircuitState.CLOSED; }, 30000);
         }
         return null;
       }
@@ -170,6 +166,9 @@ export const bioSocket = {
       if (!isSubscribed) return;
 
       try {
+        // We always start with the CURRENT GLOBAL MOCK STATE to ensure subject selection persists
+        lastData = { ...currentMockState };
+
         // DISTRIBUTED POLL: Dual Services
         const [riskUpdate, telemetryUpdate] = await Promise.all([
           fetchService(CORTEX_URL, riskCircuit, 'CORTEX').catch(() => null),
@@ -191,7 +190,13 @@ export const bioSocket = {
           anomalies: Array.isArray(riskUpdate.anomalies) ? riskUpdate.anomalies : lastData.anomalies,
           judges: (riskUpdate.judges && typeof riskUpdate.judges === 'object') ? { ...lastData.judges, ...riskUpdate.judges } : lastData.judges,
           aiAudit: riskUpdate.aiAudit || lastData.aiAudit || {},
-          lastAuditBlock: riskUpdate.lastAuditBlock || lastData.lastAuditBlock
+          lastAuditBlock: riskUpdate.lastAuditBlock || lastData.lastAuditBlock,
+          // CRITICAL: Ensure applicant ID from local selection overrides backend if backend is just generic
+          // In a real app backend would update, here we force local state priority for the mock demo
+          applicantId: currentMockState.applicantId,
+          applicantName: currentMockState.applicantName,
+          riskLevel: currentMockState.riskLevel,
+          siprScore: currentMockState.siprScore
         } : lastData;
 
         lastData = {
@@ -210,11 +215,14 @@ export const bioSocket = {
           }
         };
 
+        // Update global state with latest telemetry so it persists
+        currentMockState = { ...lastData };
+
         // DEBUG: Output state for local diagnosis
-        console.log('📡 [SYNC_ACTIVE] Aggregated Distributed State:', lastData.applicantId);
+        // console.log('📡 [SYNC_ACTIVE] Aggregated Distributed State:', lastData.applicantId);
         callback(lastData);
       } catch (fatalError) {
-        console.error('❌ [FATAL_NODE_ERROR] Recovery Protocol Engaged:', fatalError);
+        // console.error('❌ [FATAL_NODE_ERROR] Recovery Protocol Engaged:', fatalError);
         // Fallback to last known good state if everything explodes
         callback(lastData);
       }
@@ -233,5 +241,17 @@ export const bioSocket = {
   },
   selectSubject: (id: string) => {
     console.log(`[SOVEREIGN_ROOT] Focus node changed: ${id}`);
+    const selectedSubject = SUBJECTS.find(s => s.id === id);
+    if (selectedSubject) {
+      // Update the singleton state
+      currentMockState = {
+        ...currentMockState,
+        applicantId: selectedSubject.id,
+        applicantName: selectedSubject.name,
+        riskLevel: selectedSubject.riskTier as RiskLevel,
+        siprScore: selectedSubject.riskTier === 'CRITICAL' ? 0.982 : selectedSubject.riskTier === 'MEDIUM' ? 0.45 : 0.12,
+        anomalies: selectedSubject.riskTier === 'CRITICAL' ? MOCK_PROFILE.anomalies : [],
+      };
+    }
   }
 };
