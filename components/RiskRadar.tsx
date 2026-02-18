@@ -12,7 +12,7 @@ interface RiskRadarProps {
 // Componente interno para manejar la lógica de la cámara
 const CameraHandler = ({ zoomLevel }: { zoomLevel: number }) => {
   const { camera } = useThree();
-  
+
   useFrame(() => {
     // Interpolar suavemente la posición Z de la cámara hacia el zoomLevel deseado
     camera.position.z = THREE.MathUtils.lerp(camera.position.z, zoomLevel, 0.1);
@@ -50,7 +50,7 @@ const RiskRadar: React.FC<RiskRadarProps> = ({ siprScore }) => {
 
       {/* Zoom HUD Controller - Ahora funcional */}
       <div className="absolute bottom-8 left-8 z-40 flex flex-col gap-3 pointer-events-auto">
-        <div className="flex flex-col bg-black/80 backdrop-blur-xl border border-white/10 rounded-3xl p-2 shadow-[0_20px_50px_rgba(0,0,0,0.5)] overflow-hidden">
+        <div className="flex flex-col glass-vanguard bg-black/40 border border-white/10 rounded-3xl p-2 shadow-[0_20px_50px_rgba(0,0,0,0.5)] overflow-hidden neon-breathing">
           <ZoomButton onClick={handleZoomIn} label="+" />
           <div className="h-[1px] w-8 bg-white/5 mx-auto my-1"></div>
           <ZoomButton onClick={handleZoomOut} label="-" />
@@ -60,7 +60,7 @@ const RiskRadar: React.FC<RiskRadarProps> = ({ siprScore }) => {
         <span className="text-[8px] font-mono text-slate-700 uppercase tracking-[0.4em] font-black pl-2">Nav_Ctrl</span>
       </div>
 
-      <Canvas 
+      <Canvas
         camera={{ position: [0, 0, 5.5], fov: 45 }}
         style={{ background: 'transparent' }}
         shadows
@@ -68,23 +68,23 @@ const RiskRadar: React.FC<RiskRadarProps> = ({ siprScore }) => {
         <ambientLight intensity={0.4} />
         <pointLight position={[10, 10, 10]} intensity={2} color="#06b6d4" />
         <pointLight position={[-10, -10, -10]} intensity={1} color="#f43f5e" />
-        
+
         <Suspense fallback={null}>
-            <Stars radius={100} depth={50} count={3000} factor={4} saturation={0} fade speed={1} />
-            <RiskMesh siprScore={siprScore} />
-            <CameraHandler zoomLevel={zoomLevel} />
+          <Stars radius={100} depth={50} count={3000} factor={4} saturation={0} fade speed={1} />
+          <RiskMesh siprScore={siprScore} />
+          <CameraHandler zoomLevel={zoomLevel} />
         </Suspense>
-        
-        <OrbitControls 
+
+        <OrbitControls
           ref={controlsRef}
-          enableZoom={true} 
+          enableZoom={true}
           enablePan={false}
           minDistance={2.5}
           maxDistance={10}
           onEnd={() => {
             // Sincronizar el estado cuando el usuario usa el mouse/scroll
             if (controlsRef.current) {
-               setZoomLevel(controlsRef.current.object.position.length());
+              setZoomLevel(controlsRef.current.object.position.length());
             }
           }}
         />
@@ -94,13 +94,13 @@ const RiskRadar: React.FC<RiskRadarProps> = ({ siprScore }) => {
 };
 
 const ZoomButton = ({ onClick, label, isSmall = false }: any) => (
-  <button 
+  <button
     onClick={(e) => {
       e.stopPropagation();
       onClick();
     }}
     className={`
-      flex items-center justify-center transition-all hover:bg-cyan-500 hover:text-black active:scale-90
+      flex items-center justify-center transition-all hover:bg-cyan-500 hover:text-black active:scale-90 hover:neon-breathing
       ${isSmall ? 'h-8 text-[8px] font-black' : 'h-12 text-xl'}
       w-12 rounded-2xl text-cyan-400 font-mono
     `}

@@ -5,6 +5,8 @@ import { RiskProfile, RiskLevel, APPLICANT_FLOW_STEP, USER_ROLE } from './types'
 import SystemMonitor from './components/SystemMonitor';
 import ClientDashboard from './components/ClientDashboard';
 import AuthScreen from './components/AuthScreen';
+import ErrorBoundary from './components/ErrorBoundary';
+import SpaceView from './components/SpaceView';
 import { GoogleGenAI } from "@google/genai";
 
 const App: React.FC = () => {
@@ -18,28 +20,7 @@ const App: React.FC = () => {
     return bioSocket.subscribe(setData);
   }, []);
 
-  const runAiAudit = useCallback(async () => {
-    if (!data || isAuditing) return;
-    setIsAuditing(true);
-    try {
-      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-      const prompt = `Act as a senior risk auditor. Analyze this data packet: ${JSON.stringify(data)}. 
-      Return a JSON object with: verdict, reasoning (3 technical points), and confidence (0-1).`;
-
-      const response = await ai.models.generateContent({
-        model: 'gemini-3-flash-preview',
-        contents: prompt,
-        config: {
-          responseMimeType: "application/json"
-        }
-      });
-
-      const auditResult = JSON.parse(response.text || "{}");
-      setData(prev => prev ? { ...prev, aiAudit: auditResult } : null);
-    } catch (e) { console.error(e); } finally { setIsAuditing(false); }
-  }, [data, isAuditing]);
-
-  const handleLogin = (role: USER_ROLE) => {
+  const handleLogin = (role: USER_ROLE, name: string) => {
     setUserRole(role);
     setIsLoggedIn(true);
   };
@@ -49,96 +30,97 @@ const App: React.FC = () => {
     setUserRole(null);
   };
 
-  if (!data) return (
-    <div className="min-h-screen w-full bg-[#02040a] grid place-items-center font-mono overflow-hidden">
-      <div className="flex flex-col items-center p-8 text-center max-w-full">
-        {/* Animated Scanning Line */}
-        <div className="relative w-48 h-[2px] bg-slate-900 overflow-hidden rounded-full mb-10">
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-cyan-500 to-transparent animate-[scan_2s_infinite]"></div>
-        </div>
+  const runAiAudit = useCallback(async () => {
+    if (!data || isAuditing) return;
+    setIsAuditing(true);
+    try {
+      // Use VITE_API_KEY from environment
+      const apiKey = (import.meta as any).env?.VITE_API_KEY;
+      if (!apiKey) throw new Error("API_KEY_MISSING");
 
-        <div className="space-y-6">
-          <h2 className="text-[10px] md:text-[12px] tracking-[0.5em] md:tracking-[0.8em] text-cyan-500 font-black uppercase leading-none break-all sm:break-normal">
-            AEGIS_COGNITIVE_BOOT
-          </h2>
-          <div className="flex flex-col items-center gap-3">
-            <p className="text-[9px] text-slate-700 uppercase tracking-widest font-bold">
-              Awaiting Uplink Synchronization...
-            </p>
-            <div className="flex gap-1.5">
-              <div className="w-1 h-1 bg-cyan-500/40 rounded-full animate-bounce"></div>
-              <div className="w-1 h-1 bg-cyan-500/40 rounded-full animate-bounce [animation-delay:0.2s]"></div>
-              <div className="w-1 h-1 bg-cyan-500/40 rounded-full animate-bounce [animation-delay:0.4s]"></div>
-            </div>
-          </div>
-        </div>
+      const ai = new GoogleGenAI({ apiKey });
+      const prompt = `Act as a senior risk auditor for Project Aegis. Analyze this data packet: ${JSON.stringify(data)}. 
+      Return a JSON object with: verdict, reasoning (3 technical points), and confidence (0-1).`;
 
-        {/* Technical Metadata Footer */}
-        <div className="mt-20 opacity-20 text-[7px] text-slate-500 font-mono space-y-1">
-          <p>KERNEL_REVISION: 6.4.2-GOLD</p>
-          <p>BIO_METRIC_BUFFER: 0x82A10F</p>
-        </div>
-      </div>
-
-      <style>{`
-        @keyframes scan {
-          0% { transform: translateX(-100%); }
-          100% { transform: translateX(100%); }
+      const response = await ai.models.generateContent({
+        model: 'gemini-2.0-flash',
+        contents: [{ role: 'user', parts: [{ text: prompt }] }],
+        config: {
+          responseMimeType: "application/json"
         }
-      `}</style>
-    </div>
-  );
+      });
+
+      const auditResult = JSON.parse(response.text() || "{}");
+      setData(prev => prev ? { ...prev, aiAudit: auditResult } : null);
+    } catch (e) {
+      console.error("Audit Fail:", e);
+    } finally {
+      setIsAuditing(false);
+    }
+  }, [data, isAuditing]);
 
   if (!isLoggedIn) {
-    return <AuthScreen onLogin={handleLogin} />;
+    return (
+      <div className="h-screen w-screen overflow-hidden relative">
+        <SpaceView />
+        <AuthScreen onLogin={handleLogin} />
+      </div>
+    );
   }
 
   const isCritical = data?.riskLevel === RiskLevel.CRITICAL;
 
   return (
-    <div className={`h-[100dvh] w-full bg-[#000] flex flex-col transition-all duration-1000 overflow-hidden ${isCritical ? 'risk-critical' : ''}`}>
-      {/* Shell Container */}
-      <div className="flex-1 w-full 2xl:max-w-[1920px] 2xl:mx-auto 2xl:border-x 2xl:border-white/5 flex flex-col bg-[#02040a] relative overflow-hidden">
+    <div className={`h-screen w-screen overflow-hidden flex flex-col relative transition-all duration-1000 ${isCritical ? 'risk-critical' : ''}`}>
+      <SpaceView />
 
-        {/* HEADER HUD */}
-        <header className="h-16 md:h-20 border-b border-white/10 glass flex items-center justify-between px-4 md:px-12 z-[100] shrink-0">
-          <div className="flex items-center gap-4">
-            <div
-              onClick={handleLogout}
-              className={`w-10 h-10 rounded-xl grid place-items-center font-black text-sm ${isCritical ? 'bg-red-600' : 'bg-cyan-600'} shadow-[0_0_20px_rgba(0,242,255,0.4)] cursor-pointer hover:scale-105 active:scale-95 transition-transform`}
-            >Æ</div>
-            <div className="hidden sm:grid">
-              <span className="text-[11px] font-black tracking-[0.2em] text-white uppercase leading-none">{userRole}_ENCLAVE</span>
-              <span className="text-[8px] font-mono text-slate-600 uppercase tracking-widest mt-1">v6.4.2_STABLE</span>
-            </div>
+      {/* GLOBAL HUD OVERLAY */}
+      <header className="fixed top-0 left-0 right-0 z-50 h-20 glass-vanguard flex items-center justify-between px-8 border-b border-white/5">
+        <div className="flex items-center gap-6">
+          <div
+            onClick={handleLogout}
+            className={`w-12 h-12 rounded-2xl grid place-items-center font-black text-xl italic cursor-pointer transition-all hover:scale-110 active:scale-95 neon-breathing ${isCritical ? 'bg-red-500/20 text-red-500 border-red-500/50' : 'bg-cyan-500/20 text-cyan-500 border-cyan-500/50'}`}
+          >
+            Æ
           </div>
+          <div>
+            <h1 className="text-[10px] font-mono tracking-[0.5em] uppercase opacity-40">Sovereign_Cortex</h1>
+            <p className="text-xl font-black italic tracking-tighter uppercase leading-none flex items-center gap-2">
+              Aegis <span className="text-[10px] opacity-20 font-normal tracking-widest">//</span> Vanguard
+            </p>
+          </div>
+        </div>
 
-          <div className="flex items-center gap-4 md:gap-10">
-            {userRole === USER_ROLE.ADMIN && (
-              <button
-                onClick={runAiAudit}
-                disabled={isAuditing}
-                className="hidden lg:flex items-center gap-3 px-6 py-2.5 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 transition-all group"
-              >
-                {isAuditing ? <div className="w-3 h-3 border-2 border-cyan-500 border-t-transparent rounded-full animate-spin"></div> : <div className="w-2 h-2 bg-cyan-500 rounded-full group-hover:scale-125"></div>}
-                <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 group-hover:text-white">Cognitive_Audit</span>
-              </button>
-            )}
-            <div className="grid text-right">
-              <span className="text-[9px] font-mono text-slate-700 uppercase font-black">Sync_Uplink</span>
-              <span className="text-xs md:text-sm font-black text-white/80 font-mono tracking-tighter">{new Date().toLocaleTimeString('en-GB', { hour12: false })}</span>
-            </div>
+        <div className="flex items-center gap-12">
+          {userRole === USER_ROLE.ADMIN && (
             <button
-              onClick={handleLogout}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-red-500/10 border border-red-500/20 text-[9px] font-black text-red-500 uppercase tracking-widest hover:bg-red-500 hover:text-white transition-all ml-4"
+              onClick={runAiAudit}
+              disabled={isAuditing}
+              className="px-6 py-2.5 glass-vanguard rounded-xl flex items-center gap-3 hover:bg-white/5 transition-all group border border-white/5"
             >
-              <span>EXIT_ENCLAVE</span>
+              <div className={`w-2 h-2 rounded-full ${isAuditing ? 'animate-ping bg-cyan-400' : 'bg-cyan-500 group-hover:scale-150 transition-transform'}`}></div>
+              <span className="text-[10px] font-black uppercase tracking-[0.3em] font-mono text-slate-400 group-hover:text-white">Cognitive_Audit</span>
             </button>
-          </div>
-        </header>
+          )}
 
-        {/* VIEWPORT */}
-        <main className="flex-1 relative flex flex-col min-h-0">
+          <div className="hidden lg:flex flex-col items-end gap-1">
+            <span className="text-[9px] font-mono text-slate-500 uppercase tracking-widest font-bold">Uplink_Sync [STABLE]</span>
+            <span className="text-lg font-black font-mono text-white/90 tracking-tighter">
+              {new Date().toLocaleTimeString('en-GB', { hour1: '2-digit', minute: '2-digit', second: '2-digit' })}
+            </span>
+          </div>
+
+          <button
+            onClick={handleLogout}
+            className="px-6 py-3 glass-vanguard border border-red-500/20 text-red-500 hover:bg-red-500 hover:text-white transition-all rounded-xl text-[10px] font-black uppercase tracking-[0.4em] shadow-lg"
+          >
+            Exit_Enclave
+          </button>
+        </div>
+      </header>
+
+      <main className="flex-1 pt-20 relative overflow-hidden flex flex-col">
+        <ErrorBoundary>
           {userRole === USER_ROLE.ADMIN ? (
             <SystemMonitor data={data} activeUserStep={activeUserStep} />
           ) : userRole === USER_ROLE.OFFICER ? (
@@ -146,19 +128,22 @@ const App: React.FC = () => {
           ) : (
             <ClientDashboard data={data} onStepChange={setActiveUserStep} />
           )}
-        </main>
+        </ErrorBoundary>
+      </main>
 
-        {/* FOOTER HUD */}
-        <footer className="h-10 border-t border-white/5 bg-black/80 backdrop-blur-3xl flex items-center justify-between px-6 z-50 shrink-0">
-          <div className="flex items-center gap-4">
-            <span className={`w-1.5 h-1.5 rounded-full ${isCritical ? 'bg-red-500 animate-pulse' : 'bg-emerald-500 shadow-[0_0_8px_#10b981]'}`}></span>
-            <span className="text-[9px] font-black uppercase tracking-widest text-slate-600">Auth: {userRole} // Net: P2P_ENCRYPTED</span>
-          </div>
-          <div className="hidden md:block text-[9px] font-mono text-slate-800 uppercase font-black italic tracking-[0.5em]">
-            Sovereign_Liquidity_Cortex
-          </div>
-        </footer>
-      </div>
+      <footer className="h-10 glass-vanguard !bg-black/90 px-8 flex items-center justify-between z-50">
+        <div className="flex items-center gap-4 text-[9px] font-mono tracking-widest uppercase text-slate-500">
+          <span className={`w-1.5 h-1.5 rounded-full ${isCritical ? 'bg-red-500 animate-pulse' : 'bg-emerald-500'}`}></span>
+          <span>Role: {userRole}</span>
+          <span className="opacity-20">//</span>
+          <span>Net: Secure_TLS_1.3</span>
+          <span className="opacity-20">//</span>
+          <span>Cluster: <span className="text-cyan-400">AEGIS-SENTRY-01</span></span>
+        </div>
+        <div className="text-[10px] font-mono text-slate-600 font-bold tracking-[0.6em] uppercase italic">
+          Project Vanguard // Sentinel Edition
+        </div>
+      </footer>
     </div>
   );
 };

@@ -12,6 +12,12 @@ dist
 dist-ssr
 *.local
 
+# Java & Gradle
+backend/.gradle
+backend/build
+.gradle
+build
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

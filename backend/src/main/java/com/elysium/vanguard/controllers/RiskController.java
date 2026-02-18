@@ -8,6 +8,7 @@ import java.time.Instant;
 
 @RestController
 @RequestMapping("/api/risk")
+@CrossOrigin(origins = {"http://localhost:5173", "http://localhost:3000"})
 public class RiskController {
 
         @GetMapping("/profile")

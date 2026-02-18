@@ -12,9 +12,6 @@ const CollectionsDashboard: React.FC<CollectionsDashboardProps> = ({ cases = [],
   const [selectedCase, setSelectedCase] = useState<CollectionCase | null>(cases?.[0] || null);
 
   const safeMetrics = {
-    total: metrics?.total || 0,
-    recovered: metrics?.recovered || 0,
-    successRate: metrics?.successRate || 0,
     costToCollect: metrics?.costToCollect || 0,
     recoveryRate: metrics?.recoveryRate || 0,
     cureRate: metrics?.cureRate || 0,
@@ -22,21 +19,21 @@ const CollectionsDashboard: React.FC<CollectionsDashboardProps> = ({ cases = [],
   };
 
   return (
-    <div className="h-full flex flex-col gap-8 lg:gap-10 animate-in fade-in slide-in-from-right-12 duration-1000">
+    <div className="h-full flex flex-col gap-8 lg:gap-10 animate-in fade-in slide-in-from-right-12 duration-1000 entrance-bloom">
 
       {/* KPI HUD */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 shrink-0">
-        <MetricTile label="Op_Cost" value={`$${metrics.costToCollect.toFixed(3)}`} status="success" />
-        <MetricTile label="Recovery" value={`${(metrics.recoveryRate * 100).toFixed(1)}%`} status="neutral" />
-        <MetricTile label="Cure_Rate" value={`${(metrics.cureRate * 100).toFixed(1)}%`} status="success" />
-        <MetricTile label="Active_Bots" value={metrics.activeNegotiations.toString()} status="warning" />
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 shrink-0 cosmic-slide-in">
+        <MetricTile label="Op_Cost" value={`$${safeMetrics.costToCollect.toFixed(3)}`} status="success" />
+        <MetricTile label="Recovery" value={`${(safeMetrics.recoveryRate * 100).toFixed(1)}%`} status="neutral" />
+        <MetricTile label="Cure_Rate" value={`${(safeMetrics.cureRate * 100).toFixed(1)}%`} status="success" />
+        <MetricTile label="Active_Bots" value={safeMetrics.activeNegotiations.toString()} status="warning" />
       </div>
 
       {/* WORKSPACE MATRIX - Ajustado para no cortarse en móvil */}
       <div className="flex-none lg:flex-1 flex flex-col lg:grid lg:grid-cols-12 gap-8 lg:gap-10 min-h-0 lg:overflow-hidden">
 
         {/* NBA QUEUE */}
-        <div className="lg:col-span-7 flex flex-col bg-slate-900/40 border border-white/5 rounded-[3rem] p-6 md:p-10 backdrop-blur-2xl lg:overflow-hidden shadow-2xl">
+        <div className="lg:col-span-7 flex flex-col glass-vanguard bg-black/40 border border-white/5 rounded-[3rem] p-6 md:p-10 lg:overflow-hidden shadow-2xl neon-breathing">
           <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8 border-b border-white/5 pb-6">
             <div className="space-y-1">
               <h3 className="text-xs md:text-sm font-black text-white uppercase tracking-[0.3em] flex items-center gap-3 italic">
@@ -54,7 +51,7 @@ const CollectionsDashboard: React.FC<CollectionsDashboardProps> = ({ cases = [],
               <button
                 key={c.loanId}
                 onClick={() => setSelectedCase(c)}
-                className={`w-full text-left p-5 rounded-[2rem] grid grid-cols-[auto_1fr_auto] items-center gap-6 transition-all duration-500 border ${selectedCase?.loanId === c.loanId ? 'bg-cyan-500/10 border-cyan-500/40 shadow-xl scale-[1.01]' : 'bg-slate-950/40 border-white/5 hover:bg-white/[0.03] hover:border-white/10'}`}
+                className={`w-full text-left p-5 rounded-[2rem] grid grid-cols-[auto_1fr_auto] items-center gap-6 transition-all duration-500 border hover-glitch ${selectedCase?.loanId === c.loanId ? 'bg-cyan-500/10 border-cyan-500/40 shadow-xl scale-[1.01] neon-breathing' : 'glass-vanguard bg-white/[0.02] border-white/5 hover:bg-white/[0.05] hover:border-white/10'}`}
               >
                 <div className={`w-12 h-12 rounded-2xl flex items-center justify-center font-black text-white text-lg ${getClusterColor(c.cluster)} shadow-2xl`}>
                   {c.applicantName[0]}
@@ -89,9 +86,9 @@ const CollectionsDashboard: React.FC<CollectionsDashboardProps> = ({ cases = [],
 };
 
 const MetricTile: React.FC<{ label: string; value: string; status: string }> = ({ label, value, status }) => (
-  <div className="bg-slate-900/30 border border-white/5 p-5 md:p-6 rounded-[2.5rem] backdrop-blur-md grid gap-1 shadow-inner group hover:bg-white/5 transition-all">
+  <div className="glass-vanguard bg-black/40 border border-white/5 p-5 md:p-6 rounded-[2.5rem] grid gap-1 shadow-inner group hover:bg-white/5 transition-all neon-breathing">
     <div className="text-[9px] font-mono text-slate-600 uppercase tracking-widest font-black">{label}</div>
-    <div className={`text-xl md:text-3xl font-black font-mono tracking-tighter ${status === 'success' ? 'text-emerald-400' : status === 'warning' ? 'text-amber-400' : 'text-white'}`}>{value}</div>
+    <div className={`text-xl md:text-3xl font-black font-mono tracking-tighter data-stream-flicker ${status === 'success' ? 'text-emerald-400' : status === 'warning' ? 'text-amber-400' : 'text-white'}`}>{value}</div>
   </div>
 );
 

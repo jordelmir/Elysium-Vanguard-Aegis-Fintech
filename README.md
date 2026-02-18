@@ -1,136 +1,102 @@
 <div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
+<img width="1200" height="475" alt="SentinelEditionBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
 </div>
 
-# 🛡️ Elysium Vanguard | Aegis Fintech
+# 🛡️ Elysium Vanguard | Sentinel Edition
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Bio-Digital Cortex](https://img.shields.io/badge/Interface-Bio--Digital%20Cortex-00f2ff.svg)](#)
-[![Zero-Trust](https://img.shields.io/badge/Security-Zero--Trust-green.svg)](#)
+[![Interface: Living UI](https://img.shields.io/badge/Interface-Living%20UI-00f2ff.svg)](#)
+[![Security: Sentinel](https://img.shields.io/badge/Security-Sentinel--Class-green.svg)](#)
+[![Theme: Hubble Space](https://img.shields.io/badge/Theme-Hubble%20Cosmos-7000ff.svg)](#)
 
-> **A Zero-Trust financial risk visualization interface featuring real-time bio-digital feedback loops, 3D vector saturation analysis, and forensic ledger auditing.**
+> **A high-fidelity, world-class fintech interface featuring a "Living UI" animation system, 3D cosmic background architecture, and a zero-latency bio-digital risk cortex.**
 
 ---
 
-## 💠 Visión General
+## 💠 Overview: The Sentinel Vision
 
-**Elysium Vanguard: Project Aegis** es una plataforma de análisis de riesgo financiero de próxima generación. Diseñada para entornos de alta seguridad, la interfaz utiliza un "Bio-Digital Cortex" para monitorear patrones de comportamiento en tiempo real, proporcionando una capa de seguridad cognitiva sin precedentes en la industria fintech.
+**Elysium Vanguard: Aegis (Sentinel Edition)** is the definitive evolution of financial risk visualization. Designed for sovereign-level security environments, the platform integrates a dynamic **Living UI** that reacts to data flow in real-time. By combining a 3D **SpaceView** engine with advanced neural negotiation modules, the interface provides a tactile, immersive experience for auditing complex liquidity clusters.
 
-## 🚀 Características Principales
+## 🚀 Key Evolutionary Features
 
-- **Real-time Bio-Digital Feedback**: Bucles de retroalimentación en tiempo real basados en telemetría conductual.
-- **3D Vector Saturation Analysis**: Visualización avanzada de riesgos mediante motores 3D (Three.js).
-- **Forensic Ledger Auditing**: Auditoría forense automatizada con inteligencia artificial integrada.
-- **Zero-Trust Architecture**: Perímetro de seguridad infranqueable con monitoreo DDoS y cumplimiento MFA.
-- **Cognitive Audit System**: Integración directa con el modelo **Gemini 2.0 Flash** para auditorías de riesgo autónomas.
+- **"Living UI" Animation Layer**: Pervasive `entrance-bloom`, `hover-glitch`, and `data-stream-flicker` animations that make the dashboard feel alive.
+- **3D Cosmic Environment**: A persistent Three.js/R3F starfield with a Matrix-inspired particle rain, optimized for high-end professional workstations.
+- **Neural Negotiator (Gemini 2.0 Flash)**: An intelligent spectral analysis interface for autonomous risk mitigation and data synthesis.
+- **Glass-Vanguard Architecture**: A premium design system built on high-fidelity glassmorphism, depth-shadows, and neon-breathing interaction cues.
+- **Zero-Latency Monitoring**: Real-time throughput and node vitality metrics with integrated circuit-breaker resilience.
 
-## 🛠️ Configuración y Despliegue
+## 🛠️ Setup & Deployment
 
-### Requisitos Previos
+### Prerequisites
 
-- **Node.js**: Versión 18 o superior.
-- **npm**: Gestor de paquetes.
+- **Node.js**: v18+ (LTS Recommended)
+- **Vite**: Modern build-tool optimized for high-fidelity animations.
 
-### Instalación Local
+### Installation
 
-1. **Clonar el repositorio**:
+1. **Clone & Ingress**:
 
    ```bash
    git clone https://github.com/jordelmir/Elysium-Vanguard-Aegis-Fintech
    cd Elysium-Vanguard-Aegis-Fintech
    ```
 
-2. **Instalar dependencias**:
+2. **Sync Dependencies**:
 
    ```bash
    npm install
    ```
 
-3. **Configurar Variables de Entorno**:
-   Copia el archivo `.env.example` a `.env.local` y añade tu API Key de Gemini.
+3. **Initialize Environment**:
 
    ```bash
    cp .env.example .env.local
+   # Insert your GEMINI_API_KEY for the Neural Negotiator
    ```
 
-   *Obtén tu clave en [Google AI Studio](https://aistudio.google.com/app/apikey).*
-
-4. **Ejecutar en modo Desarrollo**:
+4. **Launch Local Terminal**:
 
    ```bash
    npm run dev
    ```
 
-### Producción
+### Production Build
 
-Para compilar la aplicación para producción:
+For peak performance and final "Sentinel Edition" deployment:
 
 ```bash
 npm run build
 ```
 
-### Backend (Java & Spring Boot)
+---
 
-1. **Navegar al directorio del backend**:
+## 🏗️ Stability Audit & Resilience
 
-   ```bash
-   cd backend
-   ```
+Certified architecture compliance following the **2026 Sentinel Master Audit**:
 
-2. **Compilar el proyecto**:
-
-   ```bash
-   chmod +x gradlew
-   ./gradlew build
-   ```
-
-3. **Ejecutar el servidor**:
-
-   ```bash
-   ./gradlew bootRun
-   ```
-
-   *El backend estará disponible en `http://localhost:8080`.*
+- **Null-Safety Hardening**: Eliminated all "Black Screen" risks via comprehensive interface type-guards and safe data-selectors.
+- **Distributed Resilience**: Circuit-breaker patterns and exponential backoff implemented in the telemetry and mock data layers.
+- **Visual Performance**: Animation layers are hardware-accelerated to ensure 60fps even during complex 3D rendering.
 
 ---
 
-### 🛡️ Core Resiliency & Compliance (Audit 2026)
+## 📜 Credits & Authoring
 
-Certified architecture compliance following the **Zero Trust Master Audit**:
-
-- **Fault Tolerance**: Circuit Breaker & Exponential Backoff (Client-Side).
-- **Data Integrity**: `X-Idempotency-Key` enforcement & Optimistic Locking (@Version).
-- **Concurrency**: Versioned State Transitions in distributed metrics.
-- **Observability**: SLI/SLO Baseline implemented in Mock Service metrics.
-
----
-
-## 🏗️ Arquitectura Full-Stack & Stability Audit
-
-Este sistema ha sido sometido a un riguroso **Stability Audit** para garantizar un rendimiento "Top Mundial":
-
-- **Environmental Pivot**: Debido a incompatibilidades de versiones de Java en entornos de desarrollo específicos (Java 25), el sistema utiliza una capa de **Virtual Backend** de alta fidelidad que sirve modelos de producción exactos para garantizar estabilidad absoluta.
-- **Frontend Hardening**: Todos los componentes del dashboard cuentan con seguridad de navegación nula (null-safety) para prevenir el error de "pantalla negra".
-- **Puerto Frontend**: React + Vite (Puerto 3001)
-- **Puerto Backend**: Spring Boot 3.2 (Puerto 8080 - Opcional con Virtual Backend activo)
-- **Comunicación**: REST API / WebSockets simulados con políticas de circuito cerrado.
-
-## 📜 Créditos y Autoría
-
-Este proyecto ha sido concebido y desarrollado bajo una visión de excelencia tecnológica para la integración Full-Stack.
+This project represents the pinnacle of Full-Stack Visual Engineering.
 
 - **Lead Visionary & Architect**: [Jordelmir](https://github.com/jordelmir)
+- **Design Inspiration**: Hubble/Webb Deep Space Imagery & High-End Fintech Terminals.
 - **AI Synthesis Engineering**: Antigravity (Advanced Agentic AI by Google DeepMind)
 
 ---
 
-## 🏆 Sello de Excelencia Full-Stack
+## 🏆 Sello de Excelencia Final
 
 <div align="center">
-  <img src="https://img.shields.io/badge/Sello_de_Calidad-Jordelmir_Premium_FullStack-black?style=for-the-badge&logo=shield" alt="Seal" />
-  <p><i>"Innovación sin límites, Seguridad sin fisuras en todo el stack."</i></p>
+  <img src="https://img.shields.io/badge/Sello_de_Calidad-Jordelmir_Premium_Sentinel-black?style=for-the-badge&logo=shield" alt="Seal" />
+  <p><i>"The Sentinel Edition: Where visual elegance meets sovereign-level precision."</i></p>
 </div>
 
 ---
 
-© 2026 Jordelmir. Todos los derechos reservados.
+© 2026 Jordelmir. Sentinel Edition. All rights reserved.

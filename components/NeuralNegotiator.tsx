@@ -15,7 +15,7 @@ interface Message {
   text: string;
   timestamp: string;
   attachment?: Attachment;
-  metadata?: any;
+  metadata?: Record<string, string | number | boolean>;
 }
 
 interface NeuralNegotiatorProps {
@@ -30,7 +30,7 @@ const NeuralNegotiator: React.FC<NeuralNegotiatorProps> = ({ activeCase }) => {
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const historyRef = useRef<any[]>([]);
+  const historyRef = useRef<Array<{ role: string; parts: Array<{ text: string }> }>>([]);
   const lastLoanId = useRef<string | null>(null);
 
   const suggestions = [
@@ -125,7 +125,7 @@ const NeuralNegotiator: React.FC<NeuralNegotiatorProps> = ({ activeCase }) => {
       }
 
       const ai = new GoogleGenAI({ apiKey });
-      const parts: any[] = [];
+      const parts: Array<{ text: string } | { inlineData: { data: string; mimeType: string } }> = [];
 
       if (currentInput) parts.push({ text: currentInput });
       if (currentAttachment) {
@@ -135,21 +135,18 @@ const NeuralNegotiator: React.FC<NeuralNegotiatorProps> = ({ activeCase }) => {
         if (!currentInput) parts.push({ text: "Forensic Analysis Requested on attached artifact." });
       }
 
-      historyRef.current.push({ role: 'user', parts });
+      historyRef.current.push({ role: 'user', parts: parts.filter((p): p is { text: string } => 'text' in p) });
 
-      const model = ai.getGenerativeModel({
-        model: 'gemini-1.5-flash', // Updated to stable model
-        systemInstruction: `You are the Elite Strategic Financial Advisor for Project Aegis...`
-      });
-
-      const response = await model.generateContent({
-        contents: historyRef.current,
-        generationConfig: {
+      const response = await ai.models.generateContent({
+        model: 'gemini-2.0-flash',
+        contents: historyRef.current.map(h => ({ role: h.role, parts: h.parts })),
+        config: {
           temperature: 0.8,
+          systemInstruction: `You are the Elite Strategic Financial Advisor for Project Aegis. You are an expert in financial restructuring, debt negotiation, and risk analysis. You provide concise, tactical advice.`
         }
       });
 
-      const textResponse = response.response.text() || "Protocol acknowledgement confirmed.";
+      const textResponse = response.text() || "Protocol acknowledgement confirmed.";
 
       setMessages(prev => [...prev, {
         id: `ai-${Date.now()}`,
@@ -172,10 +169,10 @@ const NeuralNegotiator: React.FC<NeuralNegotiatorProps> = ({ activeCase }) => {
   };
 
   return (
-    <div className="h-full w-full flex flex-col bg-slate-950/80 border border-white/5 rounded-[4rem] md:rounded-[5.5rem] overflow-hidden backdrop-blur-3xl shadow-[0_50px_100px_rgba(0,0,0,0.8)] relative group">
+    <div className="h-full w-full flex flex-col glass-vanguard bg-black/40 border border-white/5 rounded-[4rem] md:rounded-[5.5rem] overflow-hidden shadow-[0_50px_100px_rgba(0,0,0,0.8)] relative group neon-breathing entrance-bloom">
 
       {/* HUD HEADER - Precise and high density */}
-      <div className="shrink-0 p-8 md:p-10 border-b border-white/10 bg-white/[0.03] flex justify-between items-center z-10 backdrop-blur-3xl">
+      <div className="shrink-0 p-8 md:p-10 border-b border-white/10 glass-vanguard bg-white/[0.03] flex justify-between items-center z-10">
         <div className="flex items-center gap-6">
           <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-cyan-500/10 to-purple-500/10 border border-white/10 flex items-center justify-center shadow-xl shadow-cyan-900/10 group-hover:scale-105 transition-transform">
             <div className="w-4 h-4 bg-cyan-400 rounded-full animate-pulse shadow-[0_0_20px_rgba(34,211,238,0.5)]"></div>
@@ -214,8 +211,8 @@ const NeuralNegotiator: React.FC<NeuralNegotiatorProps> = ({ activeCase }) => {
                 </div>
 
                 <div className={`p-6 md:p-8 rounded-[2.5rem] text-sm md:text-base leading-relaxed shadow-2xl transition-all border border-white/5 ${msg.role === 'AI_AGENT'
-                    ? 'bg-slate-900/90 text-slate-200'
-                    : 'bg-gradient-to-br from-cyan-600 to-cyan-700 border-cyan-400 text-white font-medium italic'
+                  ? 'glass-vanguard bg-slate-900/60 text-slate-200'
+                  : 'bg-gradient-to-br from-cyan-600 to-cyan-700 border-cyan-400 text-white font-medium italic shadow-[0_0_20px_rgba(6,182,212,0.3)]'
                   }`}>
                   <div className="whitespace-pre-wrap selection:bg-white selection:text-black">{msg.text}</div>
 
@@ -250,7 +247,7 @@ const NeuralNegotiator: React.FC<NeuralNegotiatorProps> = ({ activeCase }) => {
       </div>
 
       {/* INPUT AREA - Matrix inspired dock */}
-      <footer className="shrink-0 p-8 md:p-12 bg-black/80 border-t border-white/10 backdrop-blur-3xl relative z-10 shadow-[0_-20px_50px_rgba(0,0,0,0.5)]">
+      <footer className="shrink-0 p-8 md:p-12 glass-vanguard bg-black/60 border-t border-white/10 relative z-10 shadow-[0_-20px_50px_rgba(0,0,0,0.5)]">
 
         {/* Rapid Suggestions - Improved mobile swipe */}
         <div className="flex gap-3 overflow-x-auto no-scrollbar mb-10 pb-2">
@@ -297,9 +294,9 @@ const NeuralNegotiator: React.FC<NeuralNegotiatorProps> = ({ activeCase }) => {
           />
           <button
             type="submit" disabled={(!inputText.trim() && !pendingAttachment) || isThinking}
-            className={`absolute right-3 top-3 bottom-3 px-10 rounded-[2rem] md:rounded-[2.5rem] font-black uppercase tracking-[0.4em] text-[10px] md:text-[11px] transition-all ${(inputText.trim() || pendingAttachment) && !isThinking
-                ? 'bg-cyan-500 text-black shadow-[0_0_30px_rgba(6,182,212,0.4)] hover:scale-105 active:scale-95'
-                : 'bg-slate-800 text-slate-700 cursor-not-allowed opacity-50'
+            className={`absolute right-3 top-3 bottom-3 px-10 rounded-[2rem] md:rounded-[2.5rem] font-black uppercase tracking-[0.4em] text-[10px] md:text-[11px] transition-all hover-glitch ${(inputText.trim() || pendingAttachment) && !isThinking
+              ? 'bg-cyan-500 text-black shadow-[0_0_30px_rgba(6,182,212,0.4)] hover:scale-105 active:scale-95'
+              : 'bg-slate-800 text-slate-700 cursor-not-allowed opacity-50'
               }`}
           >
             EXEC

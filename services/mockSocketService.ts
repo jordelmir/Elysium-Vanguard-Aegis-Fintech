@@ -1,4 +1,4 @@
-import { RiskProfile, RiskLevel } from '../types';
+import { RiskProfile, RiskLevel, ApplicationStep, AnomalyType, CollectionStrategy, DebtorCluster } from '../types';
 
 const API_BASE_URL = 'http://localhost:8080/api';
 
@@ -20,27 +20,33 @@ const MOCK_PROFILE: RiskProfile = {
   applicantName: "SARAH CONNOR",
   riskLevel: RiskLevel.CRITICAL,
   siprScore: 0.982,
-  currentStep: 'IDENTITY_SCAN',
+  currentStep: ApplicationStep.KAFKA_INGEST,
   telemetry: {
-    mouseVelocity: 142,
-    scrollConsistency: 0.89,
-    keyboardInteractions: [],
-    biometricSignature: 'AEGIS_B64_HASH_9922'
+    keystrokeJitter: 142,
+    scrollVelocity: 0.89,
+    deviceStability: 0.95,
+    batteryStatus: 82,
+    isCharging: true,
+    networkType: 'WIFI'
   },
   judges: {
-    llmAudit: 0.95,
-    neuralMesh: 0.98,
-    legacyScore: 0.42
+    tabularScore: 0.95,
+    sequentialScore: 0.98,
+    graphScore: 0.42,
+    inferenceTimeMs: 34
   },
+  explanation: [
+    { feature: 'keystroke_velocity', impact: 0.42 },
+    { feature: 'scroll_pattern', impact: 0.31 },
+    { feature: 'session_entropy', impact: 0.27 }
+  ],
   backend: {
     throughput: 4821,
     p99Latency: 12.45,
-    errorRate: 0.0001,
     virtualThreads: 1024,
     heapUsage: 45.2,
     gcActivity: 'IDLE',
-    kafkaOffset: 8210455,
-    connectedNodes: 12
+    kafkaOffset: 8210455
   },
   pipeline: {
     currentBuild: "v6.4.2-GOLD",
@@ -69,14 +75,13 @@ const MOCK_PROFILE: RiskProfile = {
         applicantName: "SARAH CONNOR",
         amountDue: 500000,
         daysPastDue: 35,
-        strategy: "HARD_NEGOTIATION",
-        cluster: "NEGOTIATION"
+        strategy: CollectionStrategy.HARD_NEGOTIATION,
+        cluster: DebtorCluster.ILLIQUID,
+        recoveryProbability: 0.35,
+        lastInteraction: new Date().toISOString()
       }
     ],
     metrics: {
-      total: 1000000,
-      recovered: 350000,
-      successRate: 0.35,
       costToCollect: 1200,
       recoveryRate: 0.35,
       cureRate: 0.12,
@@ -91,7 +96,7 @@ const MOCK_PROFILE: RiskProfile = {
   anomalies: [
     {
       id: "ANOM-001",
-      type: "BEHAVIORAL",
+      type: AnomalyType.BEHAVIORAL,
       description: "High velocity keystroke detected",
       severity: 2,
       detectedAt: new Date().toISOString()

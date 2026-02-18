@@ -45,12 +45,12 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onLogin }) => {
   };
 
   return (
-    <div className="min-h-screen w-full bg-[#02040a] flex flex-col items-center justify-center p-6 sm:p-10 lg:p-20 relative overflow-x-hidden overflow-y-auto selection:bg-cyan-500/30">
+    <div className="min-h-screen w-full flex flex-col items-center justify-center p-6 sm:p-10 lg:p-20 relative bg-transparent selection:bg-cyan-500/30">
 
-      {/* Background Atmosphere */}
+      {/* Subtle Space Atmosphere Overlays */}
       <div className="fixed inset-0 pointer-events-none z-0">
-        <div className="absolute top-[-20%] left-[-10%] w-[100vw] h-[100vw] bg-cyan-500/5 blur-[150px] rounded-full animate-pulse"></div>
-        <div className="absolute bottom-[-10%] right-[-10%] w-[80vw] h-[80vw] bg-purple-500/5 blur-[150px] rounded-full animate-pulse [animation-delay:2s]"></div>
+        <div className="absolute top-[-20%] left-[-10%] w-[100vw] h-[100vw] bg-cyan-600/5 blur-[200px] rounded-full animate-pulse opacity-40"></div>
+        <div className="absolute bottom-[-10%] right-[-10%] w-[80vw] h-[80vw] bg-indigo-600/5 blur-[200px] rounded-full animate-pulse [animation-delay:2s] opacity-30"></div>
       </div>
 
       <div className="w-full max-w-[1800px] z-10 grid grid-cols-1 xl:grid-cols-2 gap-20 items-center py-12">
@@ -58,8 +58,8 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onLogin }) => {
         {/* LEFT: Branding */}
         <div className="flex flex-col space-y-12 text-center xl:text-left">
           <div className="space-y-10">
-            <div className="flex flex-col xl:flex-row items-center xl:items-start gap-10">
-              <div className="w-24 h-24 sm:w-32 sm:h-32 bg-white rounded-[2.5rem] flex items-center justify-center text-5xl sm:text-6xl font-black text-black shadow-2xl shrink-0">Æ</div>
+            <div className="flex flex-col xl:flex-row items-center xl:items-start gap-10 entrance-bloom">
+              <div className="w-24 h-24 sm:w-32 sm:h-32 bg-white rounded-[2.5rem] flex items-center justify-center text-5xl sm:text-6xl font-black text-black shadow-2xl shrink-0 neon-breathing hover-glitch">Æ</div>
               <div className="grid gap-2">
                 <h1 className="text-[clamp(3.5rem,12vw,9rem)] font-black text-white leading-[0.8] tracking-tighter uppercase italic">
                   Aegis<br /><span className="text-white/10">Prime</span>
@@ -95,8 +95,8 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onLogin }) => {
         </div>
 
         {/* RIGHT: Terminal */}
-        <div className="flex justify-center xl:justify-end">
-          <div className="w-full max-w-[650px] glass rounded-[4rem] p-10 sm:p-16 lg:p-20 border-white/10 shadow-[0_50px_150px_rgba(0,0,0,0.8)] relative overflow-hidden">
+        <div className="flex justify-center xl:justify-end entrance-bloom [animation-delay:0.2s]">
+          <div className="w-full max-w-[650px] glass-vanguard rounded-[4rem] p-10 sm:p-16 lg:p-20 border-white/10 shadow-[0_50px_150px_rgba(0,0,0,0.8)] relative overflow-hidden neon-breathing">
 
             <div className="mb-14">
               <div className="flex items-center gap-3 mb-4">
@@ -114,16 +114,18 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onLogin }) => {
                   className={`
                     group relative flex items-center justify-between p-5 md:p-8 rounded-[2rem] md:rounded-[2.5rem] border transition-all duration-500
                     ${selectedRole === role.id
-                      ? `bg-${role.color}-500/10 border-${role.color}-500/40 shadow-2xl scale-[1.02]`
+                      ? role.color === 'red' ? 'bg-red-500/10 border-red-500/40 shadow-2xl scale-[1.02]'
+                        : role.color === 'amber' ? 'bg-amber-500/10 border-amber-500/40 shadow-2xl scale-[1.02]'
+                          : 'bg-emerald-500/10 border-emerald-500/40 shadow-2xl scale-[1.02]'
                       : 'bg-white/[0.02] border-white/5 hover:bg-white/[0.04] hover:border-white/20'}
                   `}
                 >
                   <div className="flex items-center gap-5 md:gap-8">
-                    <div className={`w-12 h-12 md:w-16 md:h-16 rounded-xl md:rounded-2xl flex items-center justify-center text-xl md:text-3xl font-black transition-all ${selectedRole === role.id ? `bg-${role.color}-500 text-black` : 'bg-white/5 text-slate-700'}`}>
+                    <div className={`w-12 h-12 md:w-16 md:h-16 rounded-xl md:rounded-2xl flex items-center justify-center text-xl md:text-3xl font-black transition-all ${selectedRole === role.id ? (role.color === 'red' ? 'bg-red-500 text-black' : role.color === 'amber' ? 'bg-amber-500 text-black' : 'bg-emerald-500 text-black') : 'bg-white/5 text-slate-700'}`}>
                       {role.icon}
                     </div>
                     <div className="text-left">
-                      <p className={`text-xs md:text-sm font-black uppercase tracking-widest ${selectedRole === role.id ? `text-${role.color}-400` : 'text-slate-500'}`}>
+                      <p className={`text-xs md:text-sm font-black uppercase tracking-widest ${selectedRole === role.id ? (role.color === 'red' ? 'text-red-400' : role.color === 'amber' ? 'text-amber-400' : 'text-emerald-400') : 'text-slate-500'}`}>
                         {role.label}
                       </p>
                       <p className="text-[10px] md:text-[11px] text-slate-600 mt-1 md:mt-2 font-bold italic leading-tight">{role.desc}</p>
@@ -136,13 +138,13 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onLogin }) => {
             <div className="space-y-8">
               <input
                 type="password" value={password} readOnly placeholder="AUTH_KEY_REQUIRED"
-                className="w-full bg-black/60 border border-white/10 rounded-2xl py-7 px-10 text-xs font-mono text-white/40 tracking-[0.8em] focus:outline-none focus:border-cyan-500/50 transition-all placeholder:text-slate-900"
+                className="w-full bg-black/40 border border-white/10 rounded-2xl py-7 px-10 text-xs font-mono text-cyan-400/40 tracking-[0.8em] focus:outline-none focus:border-cyan-500/50 transition-all placeholder:text-slate-800"
               />
               <button
                 onClick={handleLogin}
                 disabled={!selectedRole || isAuthenticating}
                 className={`
-                  w-full py-8 rounded-[2.5rem] font-black uppercase tracking-[1em] text-sm transition-all relative overflow-hidden group
+                  w-full py-8 rounded-[2.5rem] font-black uppercase tracking-[1em] text-sm transition-all relative overflow-hidden group hover-glitch
                   ${isAuthenticating
                     ? 'bg-slate-900 text-slate-700'
                     : selectedRole
