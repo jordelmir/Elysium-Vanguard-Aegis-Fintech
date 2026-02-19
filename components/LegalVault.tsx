@@ -30,7 +30,7 @@ const LegalVault: React.FC<LegalVaultProps> = ({ loanAmount, applicantName, onSi
   };
 
   return (
-    <div className="w-full max-w-2xl h-[550px] sm:h-[650px] md:h-[750px] grid overflow-hidden animate-in slide-in-from-bottom-20 duration-1000">
+    <div className="w-full max-w-2xl h-full max-h-[95vh] md:max-h-[800px] grid overflow-hidden animate-in slide-in-from-bottom-20 duration-1000">
 
       {stage === 'TRUTH' && (
         <div className="grid grid-rows-[auto_1fr_auto] gap-8 p-4 md:p-8">

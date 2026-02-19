@@ -35,7 +35,7 @@ const ApplicantFlow: React.FC<ApplicantFlowProps> = ({ onStepChange, riskData })
       } catch (err) { console.error("Camera access denied", err); }
     };
 
-    if (currentStep === APPLICANT_FLOW_STEP.LIVENESS_CHECK) startCamera();
+    if (currentStep === APPLICANT_FLOW_STEP.LIVENESS_CHECK || currentStep === APPLICANT_FLOW_STEP.IDENTITY_SCAN) startCamera();
     return () => { if (stream) stream.getTracks().forEach(track => track.stop()); };
   }, [currentStep]);
 
@@ -64,10 +64,9 @@ const ApplicantFlow: React.FC<ApplicantFlowProps> = ({ onStepChange, riskData })
   const maxAvailable = riskData.riskLevel === RiskLevel.CRITICAL ? 50 : 3000 - (riskData.siprScore * 2500);
 
   return (
-    <div className="w-full h-full max-w-6xl mx-auto flex flex-col md:flex-row glass-vanguard bg-black/40 md:rounded-[3rem] border-white/10 shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-700 entrance-bloom">
-      Line 68:
-      Line 69:       {/* Sidebar: Progress & Context - Hidden on Mobile */}
-      Line 70:       <div className="hidden lg:flex lg:w-72 glass-vanguard bg-black/20 p-8 border-r border-white/5 flex-col justify-between shrink-0">
+    <div className="w-full h-full max-w-[1800px] mx-auto flex flex-col md:flex-row glass-vanguard bg-black/40 md:rounded-[3rem] border-white/10 shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-700 entrance-bloom">
+      {/* Sidebar: Progress & Context - Hidden on Mobile */}
+      <div className="hidden lg:flex lg:w-80 glass-vanguard bg-black/20 p-10 border-r border-white/5 flex-col justify-between shrink-0">
         <div>
           <div className="w-12 h-12 bg-cyan-600 rounded-2xl flex items-center justify-center font-black text-white text-xl shadow-xl shadow-cyan-900/40 mb-10 transition-transform hover-glitch hover:scale-110">A</div>
           <h2 className="text-xl font-black text-white tracking-tighter uppercase mb-6">Portal_Ingress</h2>
@@ -107,7 +106,7 @@ const ApplicantFlow: React.FC<ApplicantFlowProps> = ({ onStepChange, riskData })
           </div>
         </div>
 
-        <div className="flex-1 p-6 md:p-12 lg:p-20 flex flex-col justify-center min-h-[500px]">
+        <div className="flex-1 p-6 md:p-8 lg:p-12 flex flex-col justify-center min-h-[500px]">
 
           {currentStep === APPLICANT_FLOW_STEP.IDENTITY_SCAN && (
             <div className="animate-in slide-in-from-bottom-8 duration-500 max-w-2xl mx-auto w-full text-center md:text-left">
@@ -125,11 +124,14 @@ const ApplicantFlow: React.FC<ApplicantFlowProps> = ({ onStepChange, riskData })
                     <span className="text-emerald-500 font-black uppercase tracking-[0.3em] text-[10px] md:text-xs">Extraction_Complete</span>
                   </div>
                 ) : (
-                  <div className="text-center p-8">
-                    <div className="w-16 h-16 md:w-24 md:h-24 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-500">
-                      <svg className="w-8 h-8 md:w-12 md:h-12 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /></svg>
+                  <div className="relative w-full h-full flex items-center justify-center">
+                    <video ref={videoRef} autoPlay playsInline className="absolute inset-0 w-full h-full object-cover opacity-60 grayscale-[0.5] brightness-75 transition-opacity duration-1000" />
+                    <div className="relative z-10 text-center p-8">
+                      <div className="w-16 h-16 md:w-24 md:h-24 bg-white/5 backdrop-blur-sm rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-500 border border-white/10">
+                        <svg className="w-8 h-8 md:w-12 md:h-12 text-cyan-500/50" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /></svg>
+                      </div>
+                      <span className="text-cyan-500/60 font-mono text-[8px] md:text-[10px] uppercase tracking-[0.4em] drop-shadow-lg">Await_Ingress</span>
                     </div>
-                    <span className="text-slate-600 font-mono text-[8px] md:text-[10px] uppercase tracking-[0.4em]">Await_Ingress</span>
                   </div>
                 )}
               </div>

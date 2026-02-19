@@ -21,6 +21,7 @@
 
 - **"Living UI" Animation Layer**: Pervasive `entrance-bloom`, `hover-glitch`, and `data-stream-flicker` animations that make the dashboard feel alive.
 - **3D Cosmic Environment**: A persistent Three.js/R3F starfield with a Matrix-inspired particle rain, optimized for high-end professional workstations.
+- **Biometric & Document Neural Extraction**: Real-time `getUserMedia` camera processing for sovereign ID scanning and retinal liveness verification.
 - **Neural Negotiator (Gemini 2.0 Flash)**: An intelligent spectral analysis interface for autonomous risk mitigation and data synthesis.
 - **Glass-Vanguard Architecture**: A premium design system built on high-fidelity glassmorphism, depth-shadows, and neon-breathing interaction cues.
 - **Zero-Latency Monitoring**: Real-time throughput and node vitality metrics with integrated circuit-breaker resilience.

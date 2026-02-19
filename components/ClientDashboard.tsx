@@ -174,7 +174,7 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ data, onStepChange })
         )}
 
         {activeTab === 'APPLICATION' && (
-          <div className="max-w-[1400px] mx-auto animate-in zoom-in-95 duration-1000 pb-12">
+          <div className="max-w-[1800px] mx-auto animate-in zoom-in-95 duration-1000 pb-12">
             <ApplicantFlow onStepChange={onStepChange} riskData={data} />
           </div>
         )}
